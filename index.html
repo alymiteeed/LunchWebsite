@@ -679,15 +679,19 @@ Your schedule works best for me. 🌷</p>
       <div class="screenshot-hint">📸 <b>Screenshot this</b> and send it back so I know your answer. 😜</div>
 
       <div class="rsvp-row" style="margin-top:20px;">
-        <a class="rsvp-btn yes" id="confirmEmailBtn" href="#"> Or send by email instead 😜</a>
+        <a class="rsvp-btn yes" id="confirmEmailBtn" href="#" target="_blank" rel="noopener"> 📧 Send via Gmail</a>
       </div>
+      <div class="rsvp-row" style="margin-top:10px;">
+        <a class="rsvp-btn no" id="confirmMailtoBtn" href="#"> ✉️ Use my Mail app instead</a>
+      </div>
+      <button class="back-link" id="copyAnswerBtn" style="margin-top:10px;">📋 or copy my answer to paste anywhere</button>
       <button class="back-link" id="backFromFinalBtn">← change my answer</button>
       <div class="status" id="statusFinal"></div>
     </div>
 
   </div>
 
-  <footer>tapping a button opens your email app with the reply ready to send</footer>
+  <footer>tap Gmail or Mail app to send your reply, or copy it to paste anywhere</footer>
 
 <script>
   // ---- EDIT THESE TO MATCH YOUR PLAN ----
@@ -756,10 +760,28 @@ Your schedule works best for me. 🌷</p>
     return `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
 
+  // Gmail's web compose link — opens in any browser tab, no mail app needed.
+  // This is the reliable path for phones/in-app browsers (Messenger, Instagram, etc.)
+  // that don't have a mail client configured, which is where plain mailto: links silently fail.
+  function buildGmailWeb(subject, body){
+    const params = new URLSearchParams({
+      view: 'cm',
+      fs: '1',
+      to: RECIPIENT_EMAIL,
+      su: subject,
+      body: body
+    });
+    return `https://mail.google.com/mail/?${params.toString()}`;
+  }
+
   const receiptTag = document.getElementById('receiptTag');
-  const confirmEmailBtn = document.getElementById('confirmEmailBtn');
+  const confirmEmailBtn = document.getElementById('confirmEmailBtn');   // Gmail web link
+  const confirmMailtoBtn = document.getElementById('confirmMailtoBtn'); // mailto: fallback
+  const copyAnswerBtn = document.getElementById('copyAnswerBtn');
 
   let lastAnswer = null; // "yes" or "no"
+  let lastSubject = "";
+  let lastBody = "";
 
   function buildFinalYes(){
     lastAnswer = "yes";
@@ -794,7 +816,10 @@ Your schedule works best for me. 🌷</p>
     const subject = `Lunch RSVP: Yes — ${when}`;
     let body = `RSVP: Yes, I'm in\n\nWhen: ${when}\nWhere: ${where}${suggestedLocation ? ' (my suggestion)' : ''}\nVibe: ${EVENT_VIBE}\n`;
     if (note) body += `\nNote: ${note}\n`;
-    confirmEmailBtn.href = buildMailto(subject, body);
+    lastSubject = subject;
+    lastBody = body;
+    confirmEmailBtn.href = buildGmailWeb(subject, body);
+    confirmMailtoBtn.href = buildMailto(subject, body);
   }
 
   function buildFinalNo(){
@@ -821,13 +846,33 @@ Your schedule works best for me. 🌷</p>
     const subject = `Lunch RSVP: Can't make it`;
     let body = `RSVP: Can't make it\n`;
     if (note) body += `\nNote: ${note}\n`;
-    confirmEmailBtn.href = buildMailto(subject, body);
+    lastSubject = subject;
+    lastBody = body;
+    confirmEmailBtn.href = buildGmailWeb(subject, body);
+    confirmMailtoBtn.href = buildMailto(subject, body);
   }
 
+  const statusFinal = document.getElementById('statusFinal');
+
   confirmEmailBtn.addEventListener('click', () => {
-    const status = document.getElementById('statusFinal');
-    status.textContent = "Opening your email app — hit send to confirm.";
-    status.classList.add('show');
+    statusFinal.textContent = "Opening Gmail in a new tab — hit send to confirm.";
+    statusFinal.classList.add('show');
+  });
+
+  confirmMailtoBtn.addEventListener('click', () => {
+    statusFinal.textContent = "Opening your Mail app — hit send to confirm.";
+    statusFinal.classList.add('show');
+  });
+
+  copyAnswerBtn.addEventListener('click', async () => {
+    const fullText = `To: ${RECIPIENT_EMAIL}\nSubject: ${lastSubject}\n\n${lastBody}`;
+    try {
+      await navigator.clipboard.writeText(fullText);
+      statusFinal.textContent = "Copied! Paste it into any email, chat, or message.";
+    } catch (err) {
+      statusFinal.textContent = "Couldn't copy automatically — please select and copy the text manually.";
+    }
+    statusFinal.classList.add('show');
   });
 
   // step 1 -> yes goes to the time step; no goes straight to the no-path
