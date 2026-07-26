@@ -534,15 +534,15 @@ Your schedule works best for me. 🌷</p>
     <div class="photo-strip-title">a few of our memories</div>
     <div class="photo-row">
       <div class="polaroid">
-        <img class="photo" <img src="1.jpg" alt="memory 1" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--tomato), var(--mustard))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
+        <img class="photo" src="1.jpg" alt="memory 1" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--tomato), var(--mustard))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">First lunch out ☺️ 🍱</span>
       </div>
       <div class="polaroid">
-        <img class="photo" <img src="1.1.jpg" alt="memory 2" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--mustard), var(--green))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
+        <img class="photo" src="1.1.jpg" alt="memory 2" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--mustard), var(--green))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">Facade of the school 🏫 </span>
       </div>
       <div class="polaroid">
-        <img class="photo" <img src="2.jpg" alt="memory 3" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--green), var(--tomato))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
+        <img class="photo" src="2.jpg" alt="memory 3" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--green), var(--tomato))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">Second lunch out 🤍</span>
       </div>
       <div class="polaroid">
@@ -679,7 +679,7 @@ Your schedule works best for me. 🌷</p>
       <div class="screenshot-hint">📸 <b>Screenshot this</b> and send it back so I know your answer. 😜</div>
 
       <div class="rsvp-row" style="margin-top:20px;">
-        <a class="rsvp-btn yes" id="confirmEmailBtn" href="#"> Send by messenger instead 😜</a>
+        <a class="rsvp-btn yes" id="confirmEmailBtn" href="#"> Or send by email instead 😜</a>
       </div>
       <button class="back-link" id="backFromFinalBtn">← change my answer</button>
       <div class="status" id="statusFinal"></div>
@@ -687,11 +687,11 @@ Your schedule works best for me. 🌷</p>
 
   </div>
 
-  <footer>tapping a button opens your facebook app with the reply ready to send</footer>
+  <footer>tapping a button opens your email app with the reply ready to send</footer>
 
 <script>
   // ---- EDIT THESE TO MATCH YOUR PLAN ----
-  const RECIPIENT_EMAIL = "you@example.com";     // <-- put YOUR email here
+  const RECIPIENT_EMAIL = "alyssamaranan01@gmail.com";     // <-- put YOUR email here
   const EVENT_WHERE = "Yabu, SM North 😊";
   const EVENT_VIBE  = "Crispy katsu, cozy comfort food 🐷🍱";
   // ----------------------------------------
@@ -826,7 +826,7 @@ Your schedule works best for me. 🌷</p>
 
   confirmEmailBtn.addEventListener('click', () => {
     const status = document.getElementById('statusFinal');
-    status.textContent = "Opening your facebook app — hit send to confirm.";
+    status.textContent = "Opening your email app — hit send to confirm.";
     status.classList.add('show');
   });
 
