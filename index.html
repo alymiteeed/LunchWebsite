@@ -423,6 +423,118 @@
     color: #c9748a;
   }
 
+  /* corkboard with pinned "receipts" from past lunches */
+  .corkboard{
+    width: 100%;
+    max-width: 460px;
+    margin-bottom: clamp(24px, 5vw, 34px);
+    text-align: center;
+  }
+  .corkboard-title{
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.3px;
+    color: #a3475f;
+    margin-bottom: 14px;
+    transform: rotate(-1deg);
+  }
+  .corkboard-title::before{ content: "📌 "; }
+
+  .cork-frame{
+    position: relative;
+    border-radius: 18px;
+    padding: 32px 16px 24px;
+    background:
+      radial-gradient(circle at 15% 22%, rgba(0,0,0,0.12) 0 2px, transparent 3px),
+      radial-gradient(circle at 42% 68%, rgba(0,0,0,0.12) 0 2px, transparent 3px),
+      radial-gradient(circle at 72% 28%, rgba(0,0,0,0.12) 0 2px, transparent 3px),
+      radial-gradient(circle at 88% 78%, rgba(0,0,0,0.10) 0 2px, transparent 3px),
+      radial-gradient(circle at 58% 12%, rgba(0,0,0,0.10) 0 2px, transparent 3px),
+      radial-gradient(circle at 22% 88%, rgba(0,0,0,0.10) 0 2px, transparent 3px),
+      radial-gradient(circle at 8% 60%, rgba(255,255,255,0.12) 0 2px, transparent 3px),
+      linear-gradient(155deg, #d3a06a 0%, #b47c40 100%);
+    box-shadow:
+      0 16px 32px -14px rgba(120, 70, 30, 0.4),
+      inset 0 0 0 8px rgba(139, 90, 43, 0.35);
+    display:flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content:center;
+  }
+
+  .receipt-wrap{ position:relative; flex: 0 0 auto; }
+  .receipt-wrap.tilt-l{ transform: rotate(-5deg); }
+  .receipt-wrap.tilt-r{ transform: rotate(4deg); }
+
+  .pin{
+    position:absolute;
+    top:-8px; left:50%;
+    transform: translateX(-50%);
+    width:15px; height:15px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #ff9fb2 0%, #d94f68 55%, #9c2c44 100%);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.45);
+    z-index:2;
+  }
+
+  .receipt{
+    position: relative;
+    width: 148px;
+    background: var(--paper);
+    padding: 16px 12px 24px;
+    font-family: 'Quicksand', sans-serif;
+    color: var(--ink);
+    box-shadow: 0 10px 20px -8px rgba(0,0,0,0.35);
+  }
+  .receipt::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:-9px; height:18px;
+    background:
+      linear-gradient(-45deg, transparent 9px, var(--paper) 9px) 0 0,
+      linear-gradient(45deg, transparent 9px, var(--paper) 9px) 0 0;
+    background-size: 18px 18px;
+    background-repeat: repeat-x;
+  }
+  .receipt-brand{
+    font-family:'Baloo 2', cursive;
+    font-weight:800;
+    font-size:14px;
+    letter-spacing: 0.5px;
+    color: #c0392b;
+    margin-bottom: 2px;
+    text-align:center;
+  }
+  .receipt-sub{
+    font-size:8px;
+    letter-spacing:0.6px;
+    color:#b98a94;
+    margin-bottom:10px;
+    text-transform:uppercase;
+    text-align:center;
+  }
+  .receipt-rule{ border-top: 1px dashed #d8c3bb; margin: 8px 0; }
+  .receipt-item{ display:flex; justify-content:space-between; gap:6px; font-size:10px; padding:2px 0; }
+  .receipt-total{ display:flex; justify-content:space-between; font-size:11px; font-weight:700; margin-top:6px; }
+
+  .stamp-paid{
+    position:absolute;
+    bottom: 30px; right: 6px;
+    font-family:'Baloo 2', cursive;
+    font-weight:800;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: #c0392b;
+    border: 2px solid #c0392b;
+    border-radius: 6px;
+    padding: 1px 5px;
+    transform: rotate(-14deg);
+    opacity: 0.7;
+    mix-blend-mode: multiply;
+    pointer-events:none;
+  }
+
   footer{
     margin-top: 32px;
     font-family:'Quicksand', sans-serif;
@@ -550,6 +662,48 @@ Your schedule works best for me. 🌷</p>
         <span class="caption">Memory 🌸</span>
       </div>
     
+      </div>
+    </div>
+  </div>
+
+  <!--
+    CORKBOARD MEMORIES
+    Two "receipt" cards pinned to a corkboard, standing in for two past
+    lunches together (Greenwich & Max's). Edit the items and amounts
+    (₱000 placeholders) in each .receipt block below to match your
+    actual receipts.
+  -->
+  <div class="corkboard">
+    <div class="corkboard-title">Keeping the receipts, cherishing the moments. ❤</div>
+    <div class="cork-frame">
+      <div class="receipt-wrap tilt-l">
+        <div class="pin"></div>
+        <div class="receipt">
+          <div class="receipt-brand">Greenwich</div>
+          <div class="receipt-sub">Pizza &amp; Pasta</div>
+          <div class="receipt-rule"></div>
+          <div class="receipt-item"><span>Overload Pizza</span><span>₱000</span></div>
+          <div class="receipt-item"><span>Chicken &amp; Rice</span><span>₱000</span></div>
+          <div class="receipt-item"><span>Coke x2</span><span>₱000</span></div>
+          <div class="receipt-rule"></div>
+          <div class="receipt-total"><span>Total</span><span>₱000</span></div>
+          <div class="stamp-paid">PAID</div>
+        </div>
+      </div>
+      <div class="receipt-wrap tilt-r">
+        <div class="pin"></div>
+        <div class="receipt">
+          <div class="receipt-brand">Max's</div>
+          <div class="receipt-sub">Restaurant</div>
+          <div class="receipt-rule"></div>
+          <div class="receipt-item"><span>Burger and Fries</span><span>₱000</span></div>
+          <div class="receipt-item"><span>Pork Sisig</span><span>₱000</span></div>
+          <div class="receipt-item"><span>Rice</span><span>₱000</span></div>
+          <div class="receipt-item"><span>Pepsi cola x2</span><span>₱000</span></div>
+          <div class="receipt-rule"></div>
+          <div class="receipt-total"><span>Total</span><span>₱000</span></div>
+          <div class="stamp-paid">PAID</div>
+        </div>
       </div>
     </div>
   </div>
