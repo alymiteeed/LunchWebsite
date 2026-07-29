@@ -729,7 +729,7 @@ Your schedule works best for me. 🌷</p>
     <!-- STEP 1: the question, no details yet -->
     <div class="step active" id="step1">
       <div class="card-title">Are You In? 🥢</div>
-      <p class="question">Before anything else — Yabu, sometime soon. In or out? 😊 </p>
+      <p class="question">Before anything else — Yabu, this week. In or out? 😊 </p>
       <div class="rsvp-row">
         <button class="rsvp-btn yes" id="yesBtn">Yes, I'm in! 🎉</button>
         <button class="rsvp-btn no" id="noBtn">Can't make it 🥲</button>
@@ -886,10 +886,11 @@ Your schedule works best for me. 🌷</p>
     step.classList.add('active');
   }
 
-  // default the date picker to a week from today so it's never in the past
+  // default the date picker to a sensible near-term day, but let her pick any date she wants
   const defaultDate = new Date();
-  defaultDate.setDate(defaultDate.getDate() + 7);
+  defaultDate.setDate(defaultDate.getDate() + 1);
   document.getElementById('pickDate').value = defaultDate.toISOString().split('T')[0];
+  document.getElementById('pickDate').min = new Date().toISOString().split('T')[0];
 
   function formatTime12hr(timeStr){
     if (!timeStr) return "time TBD";
