@@ -646,19 +646,19 @@ Your schedule works best for me. 🌷</p>
     <div class="photo-strip-title">a few of our memories</div>
     <div class="photo-row">
       <div class="polaroid">
-        <img class="photo" src="1.jpg" alt="memory 1" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--tomato), var(--mustard))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
+        <img class="photo" src="images/1.jpg" alt="memory 1" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--tomato), var(--mustard))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">First lunch out ☺️ 🍱</span>
       </div>
       <div class="polaroid">
-        <img class="photo" src="1.1.jpg" alt="memory 2" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--mustard), var(--green))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
+        <img class="photo" src="images/1.1.jpg" alt="memory 2" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--mustard), var(--green))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">Facade of the school 🏫 </span>
       </div>
       <div class="polaroid">
-        <img class="photo" src="2.jpg" alt="memory 3" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--green), var(--tomato))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
+        <img class="photo" src="images/2.jpg" alt="memory 3" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--green), var(--tomato))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">Second lunch out 🤍</span>
       </div>
       <div class="polaroid">
-        <img class="photo" src="2.1.jpg" alt="memory 4" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, #ffd9e8, #f6a35a)'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
+        <img class="photo" src="images/2.1.jpg" alt="memory 4" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, #ffd9e8, #f6a35a)'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">Memory 🌸</span>
       </div>
     
@@ -729,7 +729,7 @@ Your schedule works best for me. 🌷</p>
     <!-- STEP 1: the question, no details yet -->
     <div class="step active" id="step1">
       <div class="card-title">Are You In? 🥢</div>
-      <p class="question">Before anything else — Yabu, this week. In or out? 😊 </p>
+      <p class="question">Before anything else — Lunch this week. In or out? 😊 </p>
       <div class="rsvp-row">
         <button class="rsvp-btn yes" id="yesBtn">Yes, I'm in! 🎉</button>
         <button class="rsvp-btn no" id="noBtn">Can't make it 🥲</button>
@@ -739,7 +739,7 @@ Your schedule works best for me. 🌷</p>
     <!-- STEP 2 (yes path, part A): pick date & time first -->
     <div class="step" id="stepYesTime">
       <span class="answer-tag yes">yay, you're in!</span>
-      <div class="card-title">When Are You Free? 📅</div>
+      <div class="card-title">When Are You Free? 📅  </div>
 
       <div class="detail picker">
         <div class="label">Date</div>
@@ -850,8 +850,8 @@ Your schedule works best for me. 🌷</p>
 <script>
   // ---- EDIT THESE TO MATCH YOUR PLAN ----
   const RECIPIENT_EMAIL = "alyssamaranan01@gmail.com";     // <-- put YOUR email here
-  const EVENT_WHERE = "Yabu, SM North 😊";
-  const EVENT_VIBE  = "Crispy katsu, cozy comfort food 🐷🍱";
+  const EVENT_WHERE = "SM North 😊";
+  const EVENT_VIBE  = "Crispy katsu? 😊 cozy comfort food 🐷🍱";
   // ----------------------------------------
 
   document.getElementById('dWhere').textContent = EVENT_WHERE;
