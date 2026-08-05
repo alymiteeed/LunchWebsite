@@ -547,6 +547,109 @@
     padding: 0 10px;
   }
 
+  /* ============ MENU OF CONVERSATIONS ============ */
+  .menu-section{
+    width: 100%;
+    max-width: 560px;
+    margin-top: clamp(20px, 5vw, 32px);
+    margin-bottom: clamp(24px, 5vw, 34px);
+    text-align: center;
+  }
+  .menu-title{
+    font-family: 'Baloo 2', cursive;
+    font-weight: 800;
+    font-size: clamp(21px, 4.5vw, 27px);
+    color: #a3475f;
+    margin-bottom: 8px;
+    transform: rotate(-0.6deg);
+  }
+  .menu-subtitle{
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: #8a616b;
+    max-width: 440px;
+    margin: 0 auto clamp(18px, 4vw, 26px);
+  }
+
+  .menu-grid{
+    display:flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .menu-card{
+    flex: 1 1 148px;
+    max-width: 168px;
+    min-height: 190px;
+    perspective: 1200px;
+    cursor: pointer;
+  }
+  .menu-card-inner{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 190px;
+    transition: transform .6s cubic-bezier(.34,1.2,.64,1);
+    transform-style: preserve-3d;
+  }
+  .menu-card.flipped .menu-card-inner{ transform: rotateY(180deg); }
+
+  .menu-card-front, .menu-card-back{
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: var(--paper);
+    border: 2px dashed var(--paper-shadow);
+    border-radius: 20px;
+    box-shadow: 0 14px 28px -14px rgba(163,71,95,0.3);
+    display:flex;
+    flex-direction: column;
+    align-items:center;
+    justify-content:center;
+    padding: 18px 14px;
+    box-sizing: border-box;
+  }
+  .menu-card-back{
+    transform: rotateY(180deg);
+    background: linear-gradient(160deg, #fff6ee 0%, var(--paper) 100%);
+  }
+
+  .menu-icon{ font-size: 34px; margin-bottom: 10px; filter: drop-shadow(0 3px 4px rgba(163,71,95,0.15)); }
+  .menu-card-title{
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: 15.5px;
+    color: #a3475f;
+    margin-bottom: 8px;
+  }
+  .menu-card-desc{
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #8a616b;
+  }
+  .menu-card-message{
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .menu-card:hover .menu-card-inner{ transform: translateY(-3px); }
+  .menu-card.flipped:hover .menu-card-inner{ transform: rotateY(180deg) translateY(-3px); }
+
+  .menu-footer{
+    margin-top: clamp(16px, 4vw, 22px);
+    font-size: 13px;
+    font-weight: 600;
+    color: #c9748a;
+  }
+
+  @media (min-width: 601px){
+    .menu-section{ max-width: 600px; }
+    .menu-card{ max-width: 176px; }
+  }
+
   /* ============ RESPONSIVE BREAKPOINTS ============ */
 
   /* very small phones (older iPhones, small Android) */
@@ -556,6 +659,8 @@
     .detail .label{ min-width: 62px; font-size: 10px; }
     .polaroid{ width: 108px; }
     .doodle{ display:none; } /* decorative only — free up space/perf on tiny screens */
+    .menu-card{ flex: 1 1 100%; max-width: 260px; min-height: 150px; }
+    .menu-card-inner{ min-height: 150px; }
   }
 
   /* short / landscape phones: reduce vertical rhythm so key content isn't squeezed */
@@ -630,7 +735,66 @@ Let me know if you’re in! ✨🥰
 Your schedule works best for me. 🌷</p>
   </div>
 
+  <!--
+    MENU OF CONVERSATIONS
+    Three tap-to-flip cards (Appetizer / Main Course / Dessert).
+    Edit the text inside each ".menu-card-desc" (front) and
+    ".menu-card-message" (back — what's revealed on tap) below
+    to say whatever you'd like each course to hold.
+  -->
+  <div class="menu-section">
+    <div class="menu-title">Today's Special 💛🍽️</div>
+    <p class="menu-subtitle">Every course holds a little piece of what I'd love to share with you.</p>
+    <p class="menu-subtitle">Prepared with gratitude, served with respect.</p>
+   
+    <div class="menu-grid">
 
+      <div class="menu-card" onclick="this.classList.toggle('flipped')">
+        <div class="menu-card-inner">
+          <div class="menu-card-front">
+            <div class="menu-icon">🥗</div>
+            <div class="menu-card-title">Appetizer</div>
+            <div class="menu-card-desc">A little something to start our conversation and warm your heart.</div>
+          </div>
+          <div class="menu-card-back">
+            <div class="menu-icon">💬</div>
+            <div class="menu-card-message">A thoughtful beginning.😊</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card" onclick="this.classList.toggle('flipped')">
+        <div class="menu-card-inner">
+          <div class="menu-card-front">
+            <div class="menu-icon">🍝</div>
+            <div class="menu-card-title">Main Course</div>
+            <div class="menu-card-desc">The moments, questions, and stories I truly want to share with you.</div>
+          </div>
+          <div class="menu-card-back">
+            <div class="menu-icon">✨</div>
+            <div class="menu-card-message">The message I've been wanting to share with you.🥰</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card" onclick="this.classList.toggle('flipped')">
+        <div class="menu-card-inner">
+          <div class="menu-card-front">
+            <div class="menu-icon">🍰</div>
+            <div class="menu-card-title">Dessert</div>
+            <div class="menu-card-desc">A sweet ending, filled with smiles, little surprises, and words worth remembering.</div>
+          </div>
+          <div class="menu-card-back">
+            <div class="menu-icon">🎀</div>
+            <div class="menu-card-message">A little reminder of how much you're loved and appreciated.🍡</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="menu-footer">Tap a course to discover what I've been wanting to tell you. ❤️</p>
+  </div>
 
   <!--
     MEMORIES PHOTO STRIP
@@ -851,7 +1015,7 @@ Your schedule works best for me. 🌷</p>
   // ---- EDIT THESE TO MATCH YOUR PLAN ----
   const RECIPIENT_EMAIL = "alyssamaranan01@gmail.com";     // <-- put YOUR email here
   const EVENT_WHERE = "SM North 😊";
-  const EVENT_VIBE  = "Crispy katsu? 😊 cozy comfort food 🐷🍱";
+  const EVENT_VIBE  = "Cozy comfort food 🐷🍱";
   // ----------------------------------------
 
   document.getElementById('dWhere').textContent = EVENT_WHERE;
