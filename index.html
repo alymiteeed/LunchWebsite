@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>Yabu Lunch Invite</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ffd9e8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
 
@@ -21,7 +26,19 @@
 
   *{ box-sizing: border-box; }
 
-  html{ -webkit-text-size-adjust: 100%; }
+  html{
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    height: 100%;
+  }
+
+  body, .hero, .card, .sub, .dedication-text, .menu-card-desc, .menu-card-message,
+  .receipt-line .rl-value, .detail .value, .question, .caption{
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  img{ max-width: 100%; height: auto; }
 
   body{
     margin:0;
@@ -724,7 +741,7 @@
   <div class="hero">
     <div class="eyebrow"></div>
     <h1>May I invite you <br>
-        to lunch? 🐷🍱</h1> </div>
+        to lunch? 🐷🍱</h1>
     <p class="sub">Hi Ma’am Christine! 😊
 
 I’d love to invite you to lunch! It would be nice to enjoy some good food, take a little break, and have a chance to catch up and talk. 💕<br>
@@ -807,7 +824,7 @@ Your schedule works best for me. 🌷</p>
 
   
   <div class="photo-strip">
-    <div class="photo-strip-title">a few of our memories</div>
+    <div class="photo-strip-title">💌 Moments Worth Keeping</div>
     <div class="photo-row">
       <div class="polaroid">
         <img class="photo" src="Images/1.jpg" alt="memory 1" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--tomato), var(--mustard))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
@@ -824,8 +841,6 @@ Your schedule works best for me. 🌷</p>
       <div class="polaroid">
         <img class="photo" src="Images/2.1.jpg" alt="memory 4" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, #ffd9e8, #f6a35a)'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">Memory 🌸</span>
-      </div>
-    
       </div>
     </div>
   </div>
