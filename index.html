@@ -400,6 +400,68 @@
   @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
   @keyframes popIn{ from{ transform: scale(0.85); opacity:0; } to{ transform: scale(1); opacity:1; } }
 
+  /* final-answer modal: pops up over everything once she submits her RSVP */
+  .modal-overlay{
+    display:none;
+    position: fixed;
+    inset: 0;
+    background: rgba(92, 61, 74, 0.82);
+    z-index: 60;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn .15s ease;
+    overflow-y: auto;
+  }
+  .modal-overlay.show{ display:flex; }
+  .modal-card{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Quicksand', sans-serif;
+    width: 100%;
+    max-width: 420px;
+    padding: clamp(24px, 6vw, 30px) clamp(20px, 5vw, 28px);
+    box-shadow: 0 25px 60px -15px rgba(0,0,0,0.5);
+    border-radius: 28px;
+    border: 2px solid #fbeee8;
+    box-sizing: border-box;
+    position: relative;
+    margin: auto;
+    animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .modal-close{
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff6ee;
+    color: #a3475f;
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  /* extra-emphasized thank-you note shown inside the final modal */
+  .thankyou-banner{
+    text-align: center;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 800;
+    font-size: 17px;
+    line-height: 1.5;
+    color: #7a2942;
+    background: linear-gradient(135deg, #fff0d9, #ffe1ea);
+    border: 2px dashed var(--tomato);
+    border-radius: 18px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    transform: rotate(-0.5deg);
+    animation: popIn .25s cubic-bezier(.34,1.56,.64,1);
+  }
+
   /* dedication note beneath the memories strip */
   .dedication{
     width: 100%;
@@ -984,10 +1046,17 @@ Your schedule works best for me. 🌷</p>
       <button class="back-link" id="backFromNoBtn">← change my answer</button>
     </div>
 
-    <!-- FINAL: everything in one place, meant to be screenshotted back to the person who invited -->
-    <div class="step" id="stepFinal">
+  </div>
+
+  <!-- FINAL-ANSWER MODAL: pops up over everything once she submits her RSVP,
+       meant to be screenshotted back to the person who invited -->
+  <div class="modal-overlay" id="finalModalOverlay">
+    <div class="modal-card" id="stepFinal" onclick="event.stopPropagation()">
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
       <span class="receipt-tag" id="receiptTag"></span>
       <div class="card-title">Here's My Answer 🎀</div>
+
+      <div class="thankyou-banner">🙏 Thank you so much for letting me know! 💕</div>
 
       <div class="receipt-line" id="rowRSVP">
         <div class="rl-label">RSVP</div>
@@ -1010,7 +1079,7 @@ Your schedule works best for me. 🌷</p>
         <div class="rl-value" id="rvNote">—</div>
       </div>
 
-      <div class="screenshot-hint" id="seeYouHint"> <b>Happy to see you.😊</b> </div>
+      <div class="screenshot-hint" id="seeYouHint"> <b>Note: 📸 Or you can screenshot this and send it back so I know your answer. 😜</b> </div>
       <div class="screenshot-hint"></div>
 
       <div class="rsvp-row" style="margin-top:20px;">
@@ -1019,11 +1088,10 @@ Your schedule works best for me. 🌷</p>
       <div class="rsvp-row" style="margin-top:10px;">
         <a class="rsvp-btn no" id="confirmMailtoBtn" href="#"> ✉️ Use my Mail app instead</a>
       </div>
-      <button class="back-link" id="copyAnswerBtn" style="margin-top:10px;">📸 <b>Or you can screenshot this</b> and send it back so I know your answer. 😜</button>
+      <button class="back-link" id="copyAnswerBtn" style="margin-top:10px;">📋 <b>Copy my answer</b> and send it back so I know your answer. 😜</button>
       <button class="back-link" id="backFromFinalBtn">← change my answer</button>
       <div class="status" id="statusFinal"></div>
     </div>
-
   </div>
 
   <footer>tap Gmail or Mail app to send your reply, or copy it to paste anywhere</footer>
@@ -1059,13 +1127,26 @@ Your schedule works best for me. 🌷</p>
   const stepYesTime = document.getElementById('stepYesTime');
   const stepYesLocation = document.getElementById('stepYesLocation');
   const noVariant = document.getElementById('noVariant');
-  const stepFinal = document.getElementById('stepFinal');
 
-  const allSteps = [step1, stepYesTime, stepYesLocation, noVariant, stepFinal];
+  const allSteps = [step1, stepYesTime, stepYesLocation, noVariant];
   function showStep(step){
     allSteps.forEach(s => s.classList.remove('active'));
     step.classList.add('active');
   }
+
+  // final-answer modal controls
+  const finalModalOverlay = document.getElementById('finalModalOverlay');
+  function openFinalModal(){
+    finalModalOverlay.classList.add('show');
+  }
+  function closeFinalModal(){
+    finalModalOverlay.classList.remove('show');
+  }
+  document.getElementById('modalCloseBtn').addEventListener('click', closeFinalModal);
+  finalModalOverlay.addEventListener('click', closeFinalModal); // click outside the card closes it
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeFinalModal();
+  });
 
   // default the date picker to a sensible near-term day, but let her pick any date she wants
   const defaultDate = new Date();
@@ -1130,7 +1211,8 @@ Your schedule works best for me. 🌷</p>
 
     receiptTag.textContent = "I'm in! 🎉";
     receiptTag.className = "receipt-tag yes";
-    document.getElementById('seeYouHint').innerHTML = "<b>Happy to see you.😊</b>";
+    document.querySelector('.thankyou-banner').textContent = "🙏 Thank you so much for saying yes! I’m really looking forward to catching up over lunch. Can't wait!";
+    document.getElementById('seeYouHint').innerHTML = "<b>Note: 📸 Or you can screenshot this and send it back so I know your answer. 😜</b>";
 
     document.getElementById('rvRSVP').textContent = "Yes, I'm in";
     document.getElementById('rowWhen').style.display = 'flex';
@@ -1164,7 +1246,8 @@ Your schedule works best for me. 🌷</p>
 
     receiptTag.textContent = "Can't make it 🥲";
     receiptTag.className = "receipt-tag no";
-    document.getElementById('seeYouHint').innerHTML = "<b>Hope to see you soon.😊</b>";
+    document.querySelector('.thankyou-banner').textContent = "🙏 Thank you so much for letting me know! Happy to see you soon.";
+    document.getElementById('seeYouHint').innerHTML = "<b>Note: 📸 Or you can screenshot this and send it back so I know your answer. 😜</b>";
 
     document.getElementById('rvRSVP').textContent = "Can't make it";
     document.getElementById('rowWhen').style.display = 'none';
@@ -1227,21 +1310,19 @@ Your schedule works best for me. 🌷</p>
   document.getElementById('showAnswerYesBtn').addEventListener('click', () => {
     document.getElementById('statusFinal').classList.remove('show');
     buildFinalYes();
-    showStep(stepFinal);
+    openFinalModal();
   });
   document.getElementById('showAnswerNoBtn').addEventListener('click', () => {
     document.getElementById('statusFinal').classList.remove('show');
     buildFinalNo();
-    showStep(stepFinal);
+    openFinalModal();
   });
 
   // back links
   document.getElementById('backFromTimeBtn').addEventListener('click', () => showStep(step1));
   document.getElementById('backFromLocationBtn').addEventListener('click', () => showStep(stepYesTime));
   document.getElementById('backFromNoBtn').addEventListener('click', () => showStep(step1));
-  document.getElementById('backFromFinalBtn').addEventListener('click', () => {
-    showStep(lastAnswer === 'yes' ? stepYesLocation : noVariant);
-  });
+  document.getElementById('backFromFinalBtn').addEventListener('click', closeFinalModal);
 </script>
 
 </body>
