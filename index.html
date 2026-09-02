@@ -1348,16 +1348,33 @@ Your schedule works best for me. 🌷</p>
       : `${base} I completely understand — hope to catch up soon!`;
   }
 
+  // For Gmail/Mail app, she leaves the page to actually hit send — so instead of popping
+  // the thank-you modal on click (before she's sent anything), we queue it and show it
+  // once she comes back to this tab/window, which is a much better signal that she's done.
+  let pendingThankYou = null;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && pendingThankYou){
+      openThankYouModal(pendingThankYou.message, pendingThankYou.icon);
+      pendingThankYou = null;
+    }
+  });
+  window.addEventListener('focus', () => {
+    if (pendingThankYou){
+      openThankYouModal(pendingThankYou.message, pendingThankYou.icon);
+      pendingThankYou = null;
+    }
+  });
+
   confirmEmailBtn.addEventListener('click', () => {
     statusFinal.textContent = "Opening Gmail in a new tab — hit send to confirm.";
     statusFinal.classList.add('show');
-    openThankYouModal(thankYouMessageFor("Thanks for sending your reply!"), "📧");
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "📧" };
   });
 
   confirmMailtoBtn.addEventListener('click', () => {
     statusFinal.textContent = "Opening your Mail app — hit send to confirm.";
     statusFinal.classList.add('show');
-    openThankYouModal(thankYouMessageFor("Thanks for sending your reply!"), "✉️");
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✉️" };
   });
 
   copyAnswerBtn.addEventListener('click', async () => {
