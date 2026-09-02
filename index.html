@@ -1488,7 +1488,12 @@ Your schedule works best for me. 🌷</p>
   });
 
   // step 1 -> yes goes to the time step; no goes straight to the no-path
-  document.getElementById('yesBtn').addEventListener('click', () => showStep(stepYesTime));
+  document.getElementById('yesBtn').addEventListener('click', () => {
+    // clear anything typed in the "can't make it" section so it can't leak into the Yes path
+    document.getElementById('noteNo').value = '';
+    document.getElementById('rescheduleDate').value = '';
+    showStep(stepYesTime);
+  });
   document.getElementById('noBtn').addEventListener('click', () => showStep(noVariant));
 
   // time step -> location step, showing the chosen date/time
@@ -1514,7 +1519,11 @@ Your schedule works best for me. 🌷</p>
   // back links
   document.getElementById('backFromTimeBtn').addEventListener('click', () => showStep(step1));
   document.getElementById('backFromLocationBtn').addEventListener('click', () => showStep(stepYesTime));
-  document.getElementById('backFromNoBtn').addEventListener('click', () => showStep(step1));
+  document.getElementById('backFromNoBtn').addEventListener('click', () => {
+    document.getElementById('noteNo').value = '';
+    document.getElementById('rescheduleDate').value = '';
+    showStep(step1);
+  });
   document.getElementById('backFromFinalBtn').addEventListener('click', closeFinalModal);
 </script>
 
