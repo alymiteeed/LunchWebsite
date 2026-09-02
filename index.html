@@ -1517,7 +1517,14 @@ Your schedule works best for me. 🌷</p>
   });
 
   // back links
-  document.getElementById('backFromTimeBtn').addEventListener('click', () => showStep(step1));
+  document.getElementById('backFromTimeBtn').addEventListener('click', () => {
+    // clear anything entered in the "Yes, I'm in!" section so it can't leak if they switch answers
+    document.getElementById('pickDate').value = '';
+    document.getElementById('pickTime').value = '12:30';
+    document.getElementById('suggestLocation').value = '';
+    document.getElementById('noteYes').value = '';
+    showStep(step1);
+  });
   document.getElementById('backFromLocationBtn').addEventListener('click', () => showStep(stepYesTime));
   document.getElementById('backFromNoBtn').addEventListener('click', () => {
     document.getElementById('noteNo').value = '';
