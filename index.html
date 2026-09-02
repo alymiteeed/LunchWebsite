@@ -445,6 +445,44 @@
     line-height: 1;
   }
 
+  /* thank-you modal: pops up after she actually taps send/copy to confirm her reply went out */
+  .thankyou-modal-icon{
+    display:block;
+    text-align:center;
+    font-size: 46px;
+    margin-bottom: 6px;
+  }
+  .thankyou-modal-title{
+    font-family: 'Baloo 2', cursive;
+    font-weight: 800;
+    font-size: 24px;
+    text-align:center;
+    color: #a3475f;
+    margin: 0 0 10px;
+    transform: rotate(-1deg);
+  }
+  .thankyou-modal-text{
+    text-align:center;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #8a616b;
+    margin: 0 0 22px;
+  }
+  .thankyou-modal-done{
+    display:block;
+    width:100%;
+    padding: 14px;
+    border: none;
+    border-radius: 999px;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    background: var(--tomato);
+    color: #fff;
+  }
+
   /* extra-emphasized thank-you note shown inside the final modal */
   .thankyou-banner{
     text-align: center;
@@ -1094,6 +1132,17 @@ Your schedule works best for me. 🌷</p>
     </div>
   </div>
 
+  <!-- THANK-YOU MODAL: pops up once she actually taps send/copy to confirm her reply went out -->
+  <div class="modal-overlay" id="thankYouModalOverlay">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" id="thankYouCloseBtn" aria-label="Close">✕</button>
+      <span class="thankyou-modal-icon" id="thankYouIcon">💌</span>
+      <div class="thankyou-modal-title">Thank You!</div>
+      <p class="thankyou-modal-text" id="thankYouText">Thanks so much for letting me know — your reply is on its way!</p>
+      <button class="thankyou-modal-done" id="thankYouDoneBtn">Done</button>
+    </div>
+  </div>
+
   <footer>tap Gmail or Mail app to send your reply, or copy it to paste anywhere</footer>
 
 <script>
@@ -1146,6 +1195,26 @@ Your schedule works best for me. 🌷</p>
   finalModalOverlay.addEventListener('click', closeFinalModal); // click outside the card closes it
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeFinalModal();
+  });
+
+  // thank-you modal controls — shown after she actually submits (sends or copies) her reply
+  const thankYouModalOverlay = document.getElementById('thankYouModalOverlay');
+  const thankYouIcon = document.getElementById('thankYouIcon');
+  const thankYouText = document.getElementById('thankYouText');
+  function openThankYouModal(message, icon){
+    thankYouText.textContent = message;
+    thankYouIcon.textContent = icon || '💌';
+    closeFinalModal();
+    thankYouModalOverlay.classList.add('show');
+  }
+  function closeThankYouModal(){
+    thankYouModalOverlay.classList.remove('show');
+  }
+  document.getElementById('thankYouCloseBtn').addEventListener('click', closeThankYouModal);
+  document.getElementById('thankYouDoneBtn').addEventListener('click', closeThankYouModal);
+  thankYouModalOverlay.addEventListener('click', closeThankYouModal); // click outside the card closes it
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeThankYouModal();
   });
 
   // default the date picker to a sensible near-term day, but let her pick any date she wants
@@ -1273,14 +1342,22 @@ Your schedule works best for me. 🌷</p>
 
   const statusFinal = document.getElementById('statusFinal');
 
+  function thankYouMessageFor(base){
+    return lastAnswer === "yes"
+      ? `${base} I'm so excited for lunch with you!`
+      : `${base} I completely understand — hope to catch up soon!`;
+  }
+
   confirmEmailBtn.addEventListener('click', () => {
     statusFinal.textContent = "Opening Gmail in a new tab — hit send to confirm.";
     statusFinal.classList.add('show');
+    openThankYouModal(thankYouMessageFor("Thanks for sending your reply!"), "📧");
   });
 
   confirmMailtoBtn.addEventListener('click', () => {
     statusFinal.textContent = "Opening your Mail app — hit send to confirm.";
     statusFinal.classList.add('show');
+    openThankYouModal(thankYouMessageFor("Thanks for sending your reply!"), "✉️");
   });
 
   copyAnswerBtn.addEventListener('click', async () => {
@@ -1292,6 +1369,7 @@ Your schedule works best for me. 🌷</p>
       statusFinal.textContent = "Couldn't copy automatically — please select and copy the text manually.";
     }
     statusFinal.classList.add('show');
+    openThankYouModal(thankYouMessageFor("Thanks for grabbing your answer!"), "📋");
   });
 
   // step 1 -> yes goes to the time step; no goes straight to the no-path
