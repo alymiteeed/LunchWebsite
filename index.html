@@ -257,6 +257,17 @@
   }
   .status.show{ display:block; }
 
+  .mailto-hint{
+    display:none;
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+    color: #c9748a;
+    font-weight: 600;
+  }
+  .mailto-hint.show{ display:block; }
+
   /* final summary / receipt screen */
   .receipt-tag{
     display:inline-block;
@@ -1126,6 +1137,7 @@ Your schedule works best for me. 🌷</p>
       <div class="rsvp-row" style="margin-top:10px;">
         <a class="rsvp-btn no" id="confirmMailtoBtn" href="#"> ✉️ Use my Mail app instead</a>
       </div>
+      <div class="mailto-hint" id="mailtoHint"></div>
       <button class="back-link" id="copyAnswerBtn" style="margin-top:10px;">📋 <b>Copy my answer</b> and send it back so I know your answer. 😜</button>
       <button class="back-link" id="backFromFinalBtn">← change my answer</button>
       <div class="status" id="statusFinal"></div>
@@ -1341,6 +1353,7 @@ Your schedule works best for me. 🌷</p>
   }
 
   const statusFinal = document.getElementById('statusFinal');
+  const mailtoHint = document.getElementById('mailtoHint');
 
   function thankYouMessageFor(base){
     return lastAnswer === "yes"
@@ -1348,22 +1361,43 @@ Your schedule works best for me. 🌷</p>
       : `${base} I completely understand — hope to catch up soon!`;
   }
 
+  // --- iPhone / Mail-app reliability helpers -------------------------------
+  // mailto: links are unreliable on iOS in a few common situations:
+  //  1) inside an in-app browser (Instagram, Messenger, TikTok, etc.) — iOS
+  //     often blocks the app-switch to Mail entirely, silently.
+  //  2) when no Mail account is configured on the phone.
+  // In both cases the page just sits there with no feedback. We detect the
+  // risky case up front (so she gets a heads-up before tapping) and add a
+  // short fallback timer after tapping so a silent failure still gets a
+  // helpful message instead of just... nothing.
+  const uaString = navigator.userAgent || "";
+  const isIOS = /iPhone|iPad|iPod/i.test(uaString) ||
+    (uaString.includes('Macintosh') && navigator.maxTouchPoints > 1); // iPadOS 13+ reports as Mac
+  const isLikelyInAppBrowser = /FBAN|FBAV|Instagram|Messenger|Line\/|MicroMessenger|TikTok|Twitter|GSA\//i.test(uaString);
+
+  if (isIOS && isLikelyInAppBrowser){
+    mailtoHint.textContent = "On iPhone, this app may block Mail from opening — if nothing happens, try \"Send via Gmail\" or \"Copy my answer\" instead.";
+    mailtoHint.classList.add('show');
+  }
+
+  let mailtoFallbackTimer = null;
+
   // For Gmail/Mail app, she leaves the page to actually hit send — so instead of popping
   // the thank-you modal on click (before she's sent anything), we queue it and show it
   // once she comes back to this tab/window, which is a much better signal that she's done.
   let pendingThankYou = null;
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && pendingThankYou){
-      openThankYouModal(pendingThankYou.message, pendingThankYou.icon);
-      pendingThankYou = null;
-    }
-  });
-  window.addEventListener('focus', () => {
+  function resolvePendingThankYou(){
     if (pendingThankYou){
+      if (mailtoFallbackTimer){ clearTimeout(mailtoFallbackTimer); mailtoFallbackTimer = null; }
       openThankYouModal(pendingThankYou.message, pendingThankYou.icon);
       pendingThankYou = null;
     }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') resolvePendingThankYou();
   });
+  window.addEventListener('focus', resolvePendingThankYou);
+  window.addEventListener('pageshow', resolvePendingThankYou); // iOS Safari back/forward cache
 
   confirmEmailBtn.addEventListener('click', () => {
     statusFinal.textContent = "Opening Gmail in a new tab — hit send to confirm.";
@@ -1375,6 +1409,21 @@ Your schedule works best for me. 🌷</p>
     statusFinal.textContent = "Opening your Mail app — hit send to confirm.";
     statusFinal.classList.add('show');
     pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✉️" };
+
+    // iPhone fallback: if the page is still visible after ~1.2s, the Mail app
+    // most likely never opened (blocked in-app browser, no Mail account, etc.)
+    // — so let her know and point her at a working option instead of leaving
+    // her guessing.
+    if (isIOS){
+      if (mailtoFallbackTimer) clearTimeout(mailtoFallbackTimer);
+      mailtoFallbackTimer = setTimeout(() => {
+        if (pendingThankYou && document.visibilityState === 'visible'){
+          statusFinal.textContent = "Didn't open your Mail app? Try \"Send via Gmail\" above, or \"Copy my answer\" below instead.";
+          statusFinal.classList.add('show');
+        }
+        mailtoFallbackTimer = null;
+      }, 1200);
+    }
   });
 
   copyAnswerBtn.addEventListener('click', async () => {
