@@ -1042,7 +1042,7 @@ Your schedule works best for me. 🌷</p>
       <div class="detail picker">
         <div class="label">Time</div>
         <div class="value">
-          <input type="time" id="pickTime" value="12:30">
+          <input type="time" id="pickTime" value="12:00">
         </div>
       </div>
       <div class="hint">pick whatever date and time actually works for you</div>
@@ -1177,6 +1177,16 @@ Your schedule works best for me. 🌷</p>
 
   document.getElementById('dWhere').textContent = EVENT_WHERE;
   document.getElementById('dVibe').textContent = EVENT_VIBE;
+
+  // default the "When Are You Free" date picker to today's actual date
+  function todayISO(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  document.getElementById('pickDate').value = todayISO();
 
   // memory photo lightbox
   const lightbox = document.getElementById('lightbox');
@@ -1519,8 +1529,8 @@ Your schedule works best for me. 🌷</p>
   // back links
   document.getElementById('backFromTimeBtn').addEventListener('click', () => {
     // clear anything entered in the "Yes, I'm in!" section so it can't leak if they switch answers
-    document.getElementById('pickDate').value = '';
-    document.getElementById('pickTime').value = '12:30';
+    document.getElementById('pickDate').value = todayISO();
+    document.getElementById('pickTime').value = '12:00';
     document.getElementById('suggestLocation').value = '';
     document.getElementById('noteYes').value = '';
     showStep(step1);
