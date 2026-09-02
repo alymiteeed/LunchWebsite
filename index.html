@@ -1084,6 +1084,13 @@ Your schedule works best for me. 🌷</p>
       <div class="card-title">No Worries 🤍</div>
       <p class="question" style="margin-bottom:18px;">Totally fine — want to send a quick note back?</p>
 
+      <div class="detail picker">
+        <div class="label">Reschedule to (optional)</div>
+        <div class="value">
+          <input type="date" id="rescheduleDate">
+        </div>
+      </div>
+
       <div class="note-field">
         <label for="noteNo">Add a note (optional)</label>
         <textarea id="noteNo" placeholder="e.g. rain check next week?"></textarea>
@@ -1122,6 +1129,10 @@ Your schedule works best for me. 🌷</p>
       <div class="receipt-line" id="rowVibe" style="display:none;">
         <div class="rl-label">Vibe</div>
         <div class="rl-value" id="rvVibe">—</div>
+      </div>
+      <div class="receipt-line" id="rowReschedule" style="display:none;">
+        <div class="rl-label">Reschedule to</div>
+        <div class="rl-value" id="rvReschedule">—</div>
       </div>
       <div class="receipt-line" id="rowNote" style="display:none;">
         <div class="rl-label">Note</div>
@@ -1254,6 +1265,13 @@ Your schedule works best for me. 🌷</p>
     return `${weekday}, ${dateLabel} at ${timeLabel}`;
   }
 
+  function formatRescheduleDate(dateStr){
+    const d = new Date(dateStr + 'T00:00:00');
+    const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+    const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `${weekday}, ${dateLabel}`;
+  }
+
   function buildMailto(subject, body){
     return `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
@@ -1324,6 +1342,8 @@ Your schedule works best for me. 🌷</p>
   function buildFinalNo(){
     lastAnswer = "no";
     const note = document.getElementById('noteNo').value.trim();
+    const rescheduleDateStr = document.getElementById('rescheduleDate').value;
+    const rescheduleLabel = rescheduleDateStr ? formatRescheduleDate(rescheduleDateStr) : '';
 
     receiptTag.textContent = "Can't make it 🥲";
     receiptTag.className = "receipt-tag no";
@@ -1335,6 +1355,14 @@ Your schedule works best for me. 🌷</p>
     document.getElementById('rowWhere').style.display = 'none';
     document.getElementById('rowVibe').style.display = 'none';
 
+    const rowReschedule = document.getElementById('rowReschedule');
+    if (rescheduleLabel){
+      rowReschedule.style.display = 'flex';
+      document.getElementById('rvReschedule').textContent = rescheduleLabel;
+    } else {
+      rowReschedule.style.display = 'none';
+    }
+
     const rowNote = document.getElementById('rowNote');
     if (note){
       rowNote.style.display = 'flex';
@@ -1345,6 +1373,7 @@ Your schedule works best for me. 🌷</p>
 
     const subject = `Lunch RSVP: Can't make it`;
     let body = `RSVP: Can't make it\n`;
+    if (rescheduleLabel) body += `\nSuggested reschedule date: ${rescheduleLabel}\n`;
     if (note) body += `\nNote: ${note}\n`;
     lastSubject = subject;
     lastBody = body;
