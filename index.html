@@ -1148,6 +1148,9 @@ Your schedule works best for me. 🌷</p>
       <div class="rsvp-row" style="margin-top:10px;">
         <a class="rsvp-btn no" id="confirmMailtoBtn" href="#"> ✉️ Use my Mail app instead</a>
       </div>
+      <div class="rsvp-row" style="margin-top:10px;">
+        <a class="rsvp-btn yes" id="confirmMessengerBtn" href="#" target="_blank" rel="noopener"> 💬 Send via Messenger</a>
+      </div>
       <div class="mailto-hint" id="mailtoHint"></div>
       <button class="back-link" id="copyAnswerBtn" style="margin-top:10px;">📋 <b>Copy my answer</b> and send it back so I know your answer. 😜</button>
       <button class="back-link" id="backFromFinalBtn">← change my answer</button>
@@ -1173,6 +1176,12 @@ Your schedule works best for me. 🌷</p>
   const RECIPIENT_EMAIL = "alyssamaranan01@gmail.com";     // <-- put YOUR email here
   const EVENT_WHERE = "SM North 😊";
   const EVENT_VIBE  = "Lunch with unlimited kwento—refills included 😂🐷🍱";
+  // Your Facebook Messenger username (the part after m.me/ in your personal
+  // Messenger link, e.g. "https://m.me/john.doe.123" -> "john.doe.123").
+  // Messenger links can't pre-fill the message text, so tapping the button
+  // below copies her answer to the clipboard first, then opens a chat with
+  // you so she just has to paste and send.
+  const MESSENGER_USERNAME = "alymaranan.03"; // <-- put YOUR m.me username here
   // ----------------------------------------
 
   document.getElementById('dWhere').textContent = EVENT_WHERE;
@@ -1303,7 +1312,9 @@ Your schedule works best for me. 🌷</p>
   const receiptTag = document.getElementById('receiptTag');
   const confirmEmailBtn = document.getElementById('confirmEmailBtn');   // Gmail web link
   const confirmMailtoBtn = document.getElementById('confirmMailtoBtn'); // mailto: fallback
+  const confirmMessengerBtn = document.getElementById('confirmMessengerBtn'); // Messenger link
   const copyAnswerBtn = document.getElementById('copyAnswerBtn');
+  const messengerUrl = `https://m.me/${MESSENGER_USERNAME}`;
 
   let lastAnswer = null; // "yes" or "no"
   let lastSubject = "";
@@ -1348,6 +1359,7 @@ Your schedule works best for me. 🌷</p>
     lastBody = body;
     confirmEmailBtn.href = buildGmailWeb(subject, body);
     confirmMailtoBtn.href = buildMailto(subject, body);
+    confirmMessengerBtn.href = messengerUrl;
   }
 
   function buildFinalNo(){
@@ -1390,6 +1402,7 @@ Your schedule works best for me. 🌷</p>
     lastBody = body;
     confirmEmailBtn.href = buildGmailWeb(subject, body);
     confirmMailtoBtn.href = buildMailto(subject, body);
+    confirmMessengerBtn.href = messengerUrl;
   }
 
   const statusFinal = document.getElementById('statusFinal');
@@ -1483,6 +1496,21 @@ Your schedule works best for me. 🌷</p>
         mailtoFallbackTimer = null;
       }, 1200);
     }
+  });
+
+  confirmMessengerBtn.addEventListener('click', async () => {
+    // Messenger links can't carry pre-filled text, so we copy her answer to
+    // the clipboard first (best effort) then let the link open the chat —
+    // she just needs to paste and hit send once she's there.
+    const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
+    try {
+      await navigator.clipboard.writeText(fullText);
+      statusFinal.textContent = "Copied your answer! Opening Messenger — just paste and send.";
+    } catch (err) {
+      statusFinal.textContent = "Opening Messenger — copy your answer above and paste it in the chat.";
+    }
+    statusFinal.classList.add('show');
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "💬" };
   });
 
   copyAnswerBtn.addEventListener('click', async () => {
