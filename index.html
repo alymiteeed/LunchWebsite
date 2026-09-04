@@ -1289,9 +1289,6 @@ Your schedule works best for me. 🌷</p>
           <a class="rsvp-btn no" id="confirmMailtoBtn" href="#"> ✉️ Use my Mail app instead</a>
         </div>
         <div class="mailto-hint" id="mailtoHint"></div>
-
-        <div class="send-divider">or just copy it</div>
-        <button class="back-link" id="copyAnswerBtn">📋 <b>Copy my answer</b> and send it back so I know your answer. 😜</button>
       </div>
       <button class="back-link" id="backFromFinalBtn" style="margin-top:14px;">← change my answer</button>
       <div class="status" id="statusFinal"></div>
@@ -1323,7 +1320,7 @@ Your schedule works best for me. 🌷</p>
     </div>
   </div>
 
-  <footer>tap Messenger, Gmail, or Mail app to send your reply, or copy it to paste anywhere</footer>
+  <footer>tap Messenger, Gmail, or Mail app to send your reply</footer>
 
 <script>
   // ---- EDIT THESE TO MATCH YOUR PLAN ----
@@ -1489,7 +1486,6 @@ Your schedule works best for me. 🌷</p>
   const confirmEmailBtn = document.getElementById('confirmEmailBtn');   // Gmail web link
   const confirmMailtoBtn = document.getElementById('confirmMailtoBtn'); // mailto: fallback
   const confirmMessengerBtn = document.getElementById('confirmMessengerBtn'); // Messenger link
-  const copyAnswerBtn = document.getElementById('copyAnswerBtn');
   const messengerUrl = `https://m.me/${MESSENGER_USERNAME}`;
 
   let lastAnswer = null; // "yes" or "no"
@@ -1695,18 +1691,6 @@ Your schedule works best for me. 🌷</p>
     pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "💬" };
     closeMessengerNote();
     window.open(confirmMessengerBtn.href, '_blank', 'noopener');
-  });
-
-  copyAnswerBtn.addEventListener('click', async () => {
-    const fullText = `To: ${RECIPIENT_EMAIL}\nSubject: ${lastSubject}\n\n${lastBody}`;
-    try {
-      await navigator.clipboard.writeText(fullText);
-      statusFinal.textContent = "Copied! Paste it into any email, chat, or message.";
-    } catch (err) {
-      statusFinal.textContent = "Couldn't copy automatically — please select and copy the text manually.";
-    }
-    statusFinal.classList.add('show');
-    openThankYouModal(thankYouMessageFor("Thanks for grabbing your answer!"), "📋");
   });
 
   // step 1 -> yes goes to the time step; no goes straight to the no-path
