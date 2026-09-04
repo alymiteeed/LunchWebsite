@@ -1438,6 +1438,9 @@ Your schedule works best for me. 🌷</p>
   document.getElementById('pickDate').value = defaultDate.toISOString().split('T')[0];
   document.getElementById('pickDate').min = new Date().toISOString().split('T')[0];
 
+  // reschedule-date picker (in the "Can't make it" step) shouldn't allow picking a day that's already passed
+  document.getElementById('rescheduleDate').min = new Date().toISOString().split('T')[0];
+
   function formatTime12hr(timeStr){
     if (!timeStr) return "time TBD";
     const [hourStr, minStr] = timeStr.split(':');
