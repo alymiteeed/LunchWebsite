@@ -327,19 +327,38 @@
   .photo-strip-title::before{ content: "📸 "; }
 
   .photo-row{
-    display:flex;
-    gap: 20px;
-    overflow-x: auto;
-    padding: 16px 12px 14px;
-    scroll-snap-type: x proximity;
+    width: 100%;
+    overflow: hidden;
+    padding: 16px 0 14px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
   }
   .photo-row::-webkit-scrollbar{ height: 6px; }
   .photo-row::-webkit-scrollbar-thumb{ background: var(--paper-shadow); border-radius: 10px; }
 
+  .photo-track{
+    display:flex;
+    gap: 20px;
+    width: max-content;
+    padding: 0 12px;
+    animation: photoSlide 22s linear infinite;
+  }
+  .photo-row:hover .photo-track,
+  .photo-track.paused{ animation-play-state: paused; }
+
+  @keyframes photoSlide{
+    from{ transform: translateX(0); }
+    to{ transform: translateX(-50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .photo-track{ animation: none; }
+    .photo-row{ overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+  }
+
   .polaroid{
     position: relative;
     flex: 0 0 auto;
-    scroll-snap-align: center;
     background: #fff;
     padding: 7px 7px 24px;
     border-radius: 20px;
@@ -877,8 +896,7 @@
     .dedication{ max-width: 460px; }
     footer{ max-width: 460px; }
 
-    /* let the memory photos breathe into a wrapped row instead of a scroll strip */
-    .photo-row{ flex-wrap: wrap; justify-content: center; overflow-x: visible; }
+    /* keep the memory photos sliding smoothly at larger sizes too */
     .polaroid{ width: 140px; }
   }
 
@@ -1004,7 +1022,8 @@ Your schedule works best for me. 🌷</p>
   
   <div class="photo-strip">
     <div class="photo-strip-title">💌 Moments Worth Keeping</div>
-    <div class="photo-row">
+    <div class="photo-row" id="photoRow">
+      <div class="photo-track" id="photoTrack">
       <div class="polaroid">
         <span class="tape"></span>
         <span class="sticker">💕</span>
@@ -1028,6 +1047,7 @@ Your schedule works best for me. 🌷</p>
         <span class="sticker">🌸</span>
         <img class="photo" src="Images/2.1.jpg" alt="memory 4" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, #ffd9e8, #f6a35a)'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">Memory 🌸</span>
+      </div>
       </div>
     </div>
   </div>
@@ -1289,6 +1309,26 @@ Your schedule works best for me. 🌷</p>
     if (e.key === 'Escape') closeLightbox();
   });
   document.getElementById('lightboxImg').addEventListener('click', (e) => e.stopPropagation());
+
+  // memory photo strip: auto-sliding filmstrip. We duplicate the cards once
+  // so the CSS animation (which slides exactly -50%) loops seamlessly, then
+  // pause the slide on touch/press so tapping a photo to open it feels normal.
+  (function setupPhotoSlider(){
+    const track = document.getElementById('photoTrack');
+    const row = document.getElementById('photoRow');
+    if (!track || !row) return;
+    const originalCards = Array.from(track.children);
+    originalCards.forEach(card => track.appendChild(card.cloneNode(true)));
+
+    const pause = () => track.classList.add('paused');
+    const resume = () => track.classList.remove('paused');
+    row.addEventListener('touchstart', pause, { passive: true });
+    row.addEventListener('touchend', resume);
+    row.addEventListener('touchcancel', resume);
+    row.addEventListener('mousedown', pause);
+    row.addEventListener('mouseup', resume);
+    row.addEventListener('mouseleave', resume);
+  })();
 
   const step1 = document.getElementById('step1');
   const stepYesTime = document.getElementById('stepYesTime');
