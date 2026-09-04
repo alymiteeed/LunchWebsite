@@ -328,47 +328,115 @@
 
   .photo-row{
     display:flex;
-    gap: 14px;
+    gap: 20px;
     overflow-x: auto;
-    padding: 6px 8px 14px;
+    padding: 16px 12px 14px;
     scroll-snap-type: x proximity;
   }
   .photo-row::-webkit-scrollbar{ height: 6px; }
   .photo-row::-webkit-scrollbar-thumb{ background: var(--paper-shadow); border-radius: 10px; }
 
   .polaroid{
+    position: relative;
     flex: 0 0 auto;
     scroll-snap-align: center;
-    background: var(--paper);
-    padding: 10px 10px 26px;
-    border-radius: 6px;
-    box-shadow: 0 10px 20px -8px rgba(163,71,95,0.3);
-    width: 128px;
+    background: #fff;
+    padding: 7px 7px 24px;
+    border-radius: 20px;
+    box-shadow:
+      0 16px 28px -10px rgba(163,71,95,0.4),
+      0 4px 10px -2px rgba(163,71,95,0.18);
+    width: 132px;
+    isolation: isolate;
   }
-  .polaroid:nth-child(odd){ transform: rotate(-4deg); }
-  .polaroid:nth-child(even){ transform: rotate(3deg); }
-  .polaroid:hover{ transform: rotate(0deg) scale(1.04); transition: transform .2s ease; }
+  .polaroid:nth-child(odd){ transform: rotate(-5deg); }
+  .polaroid:nth-child(even){ transform: rotate(4deg); }
+  .polaroid:hover{ transform: rotate(0deg) scale(1.05); transition: transform .2s ease; }
+
+  /* CapCut-style glowing gradient frame ring */
+  .polaroid::before{
+    content:"";
+    position:absolute;
+    inset:-3px;
+    border-radius: 23px;
+    padding: 3px;
+    background: linear-gradient(135deg, var(--tomato), var(--mustard));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .polaroid:nth-child(4n+2)::before{ background: linear-gradient(135deg, var(--green), #cdeedc); }
+  .polaroid:nth-child(4n+3)::before{ background: linear-gradient(135deg, var(--tomato), #ffd9e8); }
+  .polaroid:nth-child(4n+4)::before{ background: linear-gradient(135deg, var(--mustard), var(--green)); }
+
+  /* washi-tape strip peeking over the top edge */
+  .polaroid .tape{
+    position:absolute;
+    top:-11px;
+    left:50%;
+    width:52px;
+    height:22px;
+    transform: translateX(-50%) rotate(-7deg);
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.55) 0 4px, rgba(255,255,255,.15) 4px 9px),
+      var(--tomato);
+    opacity:.92;
+    border-radius: 2px;
+    box-shadow: 0 3px 6px rgba(92,61,74,.2);
+    z-index: 3;
+  }
+  .polaroid:nth-child(even) .tape{
+    transform: translateX(-50%) rotate(6deg);
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.55) 0 4px, rgba(255,255,255,.15) 4px 9px),
+      var(--green);
+  }
+
+  /* pop-out sticker badge, classic CapCut collage touch */
+  .polaroid .sticker{
+    position:absolute;
+    top:-10px;
+    right:-10px;
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    box-shadow: 0 6px 14px -2px rgba(163,71,95,.45);
+    transform: rotate(14deg);
+    z-index: 4;
+  }
 
   .polaroid .photo{
     width: 100%;
     aspect-ratio: 1 / 1;
-    border-radius: 2px;
+    border-radius: 14px;
     object-fit: cover;
     object-position: center;
     display:block;
     background: linear-gradient(135deg, var(--tomato), var(--mustard));
     cursor: pointer;
     transition: transform .15s ease;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.6);
   }
   .polaroid .photo:hover{ transform: scale(1.03); }
   .polaroid .caption{
-    display:block;
-    margin-top: 8px;
+    display:inline-block;
+    margin-top: 9px;
     font-family: 'Quicksand', sans-serif;
-    font-weight: 600;
-    font-size: 10.5px;
-    color: #b98a94;
+    font-weight: 700;
+    font-size: 10px;
+    color: #fff;
     text-align: center;
+    background: linear-gradient(120deg, #ff8fa3, #f6a35a);
+    padding: 3px 10px;
+    border-radius: 20px;
+    box-shadow: 0 3px 6px rgba(163,71,95,.25);
   }
 
   /* lightbox popup shown when a memory photo is tapped */
@@ -938,18 +1006,26 @@ Your schedule works best for me. 🌷</p>
     <div class="photo-strip-title">💌 Moments Worth Keeping</div>
     <div class="photo-row">
       <div class="polaroid">
+        <span class="tape"></span>
+        <span class="sticker">💕</span>
         <img class="photo" src="Images/1.jpg" alt="memory 1" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--tomato), var(--mustard))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">First lunch out ☺️ 🍱</span>
       </div>
       <div class="polaroid">
+        <span class="tape"></span>
+        <span class="sticker">⭐</span>
         <img class="photo" src="Images/1.1.jpg" alt="memory 2" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--mustard), var(--green))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">School Facade 🏫 </span>
       </div>
       <div class="polaroid">
+        <span class="tape"></span>
+        <span class="sticker">✨</span>
         <img class="photo" src="Images/2.jpg" alt="memory 3" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--green), var(--tomato))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">Second lunch out 🤍</span>
       </div>
       <div class="polaroid">
+        <span class="tape"></span>
+        <span class="sticker">🌸</span>
         <img class="photo" src="Images/2.1.jpg" alt="memory 4" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, #ffd9e8, #f6a35a)'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
         <span class="caption">Memory 🌸</span>
       </div>
@@ -1148,6 +1224,9 @@ Your schedule works best for me. 🌷</p>
       <div class="rsvp-row" style="margin-top:10px;">
         <a class="rsvp-btn no" id="confirmMailtoBtn" href="#"> ✉️ Use my Mail app instead</a>
       </div>
+      <div class="rsvp-row" style="margin-top:10px;">
+        <a class="rsvp-btn yes" id="confirmMessengerBtn" href="#" target="_blank" rel="noopener"> 💬 Send via Messenger</a>
+      </div>
       <div class="mailto-hint" id="mailtoHint"></div>
       <button class="back-link" id="copyAnswerBtn" style="margin-top:10px;">📋 <b>Copy my answer</b> and send it back so I know your answer. 😜</button>
       <button class="back-link" id="backFromFinalBtn">← change my answer</button>
@@ -1173,6 +1252,12 @@ Your schedule works best for me. 🌷</p>
   const RECIPIENT_EMAIL = "alyssamaranan01@gmail.com";     // <-- put YOUR email here
   const EVENT_WHERE = "SM North 😊";
   const EVENT_VIBE  = "Lunch with unlimited kwento—refills included 😂🐷🍱";
+  // Your Facebook Messenger username (the part after m.me/ in your personal
+  // Messenger link, e.g. "https://m.me/john.doe.123" -> "john.doe.123").
+  // Messenger links can't pre-fill the message text, so tapping the button
+  // below copies her answer to the clipboard first, then opens a chat with
+  // you so she just has to paste and send.
+  const MESSENGER_USERNAME = "alymaranan.03"; // <-- put YOUR m.me username here
   // ----------------------------------------
 
   document.getElementById('dWhere').textContent = EVENT_WHERE;
@@ -1303,7 +1388,9 @@ Your schedule works best for me. 🌷</p>
   const receiptTag = document.getElementById('receiptTag');
   const confirmEmailBtn = document.getElementById('confirmEmailBtn');   // Gmail web link
   const confirmMailtoBtn = document.getElementById('confirmMailtoBtn'); // mailto: fallback
+  const confirmMessengerBtn = document.getElementById('confirmMessengerBtn'); // Messenger link
   const copyAnswerBtn = document.getElementById('copyAnswerBtn');
+  const messengerUrl = `https://m.me/${MESSENGER_USERNAME}`;
 
   let lastAnswer = null; // "yes" or "no"
   let lastSubject = "";
@@ -1348,6 +1435,7 @@ Your schedule works best for me. 🌷</p>
     lastBody = body;
     confirmEmailBtn.href = buildGmailWeb(subject, body);
     confirmMailtoBtn.href = buildMailto(subject, body);
+    confirmMessengerBtn.href = messengerUrl;
   }
 
   function buildFinalNo(){
@@ -1390,6 +1478,7 @@ Your schedule works best for me. 🌷</p>
     lastBody = body;
     confirmEmailBtn.href = buildGmailWeb(subject, body);
     confirmMailtoBtn.href = buildMailto(subject, body);
+    confirmMessengerBtn.href = messengerUrl;
   }
 
   const statusFinal = document.getElementById('statusFinal');
@@ -1483,6 +1572,21 @@ Your schedule works best for me. 🌷</p>
         mailtoFallbackTimer = null;
       }, 1200);
     }
+  });
+
+  confirmMessengerBtn.addEventListener('click', async () => {
+    // Messenger links can't carry pre-filled text, so we copy her answer to
+    // the clipboard first (best effort) then let the link open the chat —
+    // she just needs to paste and hit send once she's there.
+    const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
+    try {
+      await navigator.clipboard.writeText(fullText);
+      statusFinal.textContent = "Copied your answer! Opening Messenger — just paste and send.";
+    } catch (err) {
+      statusFinal.textContent = "Opening Messenger — copy your answer above and paste it in the chat.";
+    }
+    statusFinal.classList.add('show');
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "💬" };
   });
 
   copyAnswerBtn.addEventListener('click', async () => {
