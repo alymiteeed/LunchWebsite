@@ -343,7 +343,6 @@
     padding: 0 12px;
     animation: photoSlide 22s linear infinite;
   }
-  .photo-row:hover .photo-track,
   .photo-track.paused{ animation-play-state: paused; }
 
   @keyframes photoSlide{
@@ -351,10 +350,6 @@
     to{ transform: translateX(-50%); }
   }
 
-  @media (prefers-reduced-motion: reduce){
-    .photo-track{ animation: none; }
-    .photo-row{ overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
-  }
 
   .polaroid{
     position: relative;
@@ -1310,24 +1305,14 @@ Your schedule works best for me. 🌷</p>
   });
   document.getElementById('lightboxImg').addEventListener('click', (e) => e.stopPropagation());
 
-  // memory photo strip: auto-sliding filmstrip. We duplicate the cards once
-  // so the CSS animation (which slides exactly -50%) loops seamlessly, then
-  // pause the slide on touch/press so tapping a photo to open it feels normal.
+  // memory photo strip: auto-sliding filmstrip that moves continuously in one
+  // direction. We duplicate the cards once so the CSS animation (which slides
+  // exactly -50%) loops seamlessly forever.
   (function setupPhotoSlider(){
     const track = document.getElementById('photoTrack');
-    const row = document.getElementById('photoRow');
-    if (!track || !row) return;
+    if (!track) return;
     const originalCards = Array.from(track.children);
     originalCards.forEach(card => track.appendChild(card.cloneNode(true)));
-
-    const pause = () => track.classList.add('paused');
-    const resume = () => track.classList.remove('paused');
-    row.addEventListener('touchstart', pause, { passive: true });
-    row.addEventListener('touchend', resume);
-    row.addEventListener('touchcancel', resume);
-    row.addEventListener('mousedown', pause);
-    row.addEventListener('mouseup', resume);
-    row.addEventListener('mouseleave', resume);
   })();
 
   const step1 = document.getElementById('step1');
