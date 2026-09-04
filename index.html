@@ -507,6 +507,7 @@
     overflow-y: auto;
   }
   .modal-overlay.show{ display:flex; }
+  #messengerNoteOverlay{ z-index: 70; }
   .modal-card{
     background: var(--paper);
     color: var(--ink);
@@ -574,6 +575,46 @@
     cursor: pointer;
     background: var(--tomato);
     color: #fff;
+  }
+
+  /* organized "how to send" section inside the final modal */
+  .send-options{ margin-top: 22px; }
+  .send-label{
+    text-align:center;
+    font-family:'Baloo 2', cursive;
+    font-weight:700;
+    font-size: 12px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #a3475f;
+    margin-bottom: 10px;
+  }
+  .send-divider{
+    display:flex;
+    align-items:center;
+    text-align:center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #c9a2a8;
+    margin: 18px 0 10px;
+  }
+  .send-divider::before, .send-divider::after{
+    content:"";
+    flex:1;
+    border-top: 1px dashed var(--paper-shadow);
+  }
+  .send-divider::before{ margin-right: 10px; }
+  .send-divider::after{ margin-left: 10px; }
+
+  .email-device-hint{
+    text-align: center;
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: #c9a2a8;
+    font-weight: 600;
+    margin: -2px 0 12px;
   }
 
   /* extra-emphasized thank-you note shown inside the final modal */
@@ -1233,18 +1274,26 @@ Your schedule works best for me. 🌷</p>
       <div class="screenshot-hint" id="seeYouHint"> <b>Note: 📸 Or you can screenshot this and send it back so I know your answer. 😜</b> </div>
       <div class="screenshot-hint"></div>
 
-      <div class="rsvp-row" style="margin-top:20px;">
-        <a class="rsvp-btn yes" id="confirmEmailBtn" href="#" target="_blank" rel="noopener"> 📧 Send via Gmail</a>
+      <div class="send-options">
+        <div class="send-label">💬 Fastest — chat</div>
+        <div class="rsvp-row">
+          <a class="rsvp-btn yes" id="confirmMessengerBtn" href="#" target="_blank" rel="noopener"> 💬 Send via Messenger</a>
+        </div>
+
+        <div class="send-divider">or send by email</div>
+        <div class="email-device-hint">💻 On a laptop/desktop? Use Gmail. &nbsp;·&nbsp; 📱 On your phone? Use Mail app instead.</div>
+        <div class="rsvp-row">
+          <a class="rsvp-btn yes" id="confirmEmailBtn" href="#" target="_blank" rel="noopener"> 📧 Send via Gmail</a>
+        </div>
+        <div class="rsvp-row" style="margin-top:10px;">
+          <a class="rsvp-btn no" id="confirmMailtoBtn" href="#"> ✉️ Use my Mail app instead</a>
+        </div>
+        <div class="mailto-hint" id="mailtoHint"></div>
+
+        <div class="send-divider">or just copy it</div>
+        <button class="back-link" id="copyAnswerBtn">📋 <b>Copy my answer</b> and send it back so I know your answer. 😜</button>
       </div>
-      <div class="rsvp-row" style="margin-top:10px;">
-        <a class="rsvp-btn no" id="confirmMailtoBtn" href="#"> ✉️ Use my Mail app instead</a>
-      </div>
-      <div class="rsvp-row" style="margin-top:10px;">
-        <a class="rsvp-btn yes" id="confirmMessengerBtn" href="#" target="_blank" rel="noopener"> 💬 Send via Messenger</a>
-      </div>
-      <div class="mailto-hint" id="mailtoHint"></div>
-      <button class="back-link" id="copyAnswerBtn" style="margin-top:10px;">📋 <b>Copy my answer</b> and send it back so I know your answer. 😜</button>
-      <button class="back-link" id="backFromFinalBtn">← change my answer</button>
+      <button class="back-link" id="backFromFinalBtn" style="margin-top:14px;">← change my answer</button>
       <div class="status" id="statusFinal"></div>
     </div>
   </div>
@@ -1260,7 +1309,21 @@ Your schedule works best for me. 🌷</p>
     </div>
   </div>
 
-  <footer>tap Gmail or Mail app to send your reply, or copy it to paste anywhere</footer>
+  <!-- MESSENGER HEADS-UP MODAL: pops up when "Send via Messenger" is tapped, since
+       Messenger links can't pre-fill text — this reminds her to paste before it
+       hands off to the Messenger link. -->
+  <div class="modal-overlay" id="messengerNoteOverlay">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" id="messengerNoteCloseBtn" aria-label="Close">✕</button>
+      <span class="thankyou-modal-icon">💬</span>
+      <div class="thankyou-modal-title">Quick Heads Up!</div>
+      <p class="thankyou-modal-text">Messenger can't auto-fill a message, so I'll copy your answer to your clipboard first. Once the chat opens, just <b>paste it in and hit send</b>. 💕</p>
+      <button class="thankyou-modal-done" id="messengerContinueBtn">Continue to Messenger 💬</button>
+      <button class="back-link" id="messengerCancelBtn" style="margin-top:12px;">← never mind</button>
+    </div>
+  </div>
+
+  <footer>tap Messenger, Gmail, or Mail app to send your reply, or copy it to paste anywhere</footer>
 
 <script>
   // ---- EDIT THESE TO MATCH YOUR PLAN ----
@@ -1336,8 +1399,20 @@ Your schedule works best for me. 🌷</p>
   }
   document.getElementById('modalCloseBtn').addEventListener('click', closeFinalModal);
   finalModalOverlay.addEventListener('click', closeFinalModal); // click outside the card closes it
+
+  // messenger heads-up modal controls — shown before handing off to the Messenger link
+  const messengerNoteOverlay = document.getElementById('messengerNoteOverlay');
+  function openMessengerNote(){ messengerNoteOverlay.classList.add('show'); }
+  function closeMessengerNote(){ messengerNoteOverlay.classList.remove('show'); }
+  document.getElementById('messengerNoteCloseBtn').addEventListener('click', closeMessengerNote);
+  document.getElementById('messengerCancelBtn').addEventListener('click', closeMessengerNote);
+  messengerNoteOverlay.addEventListener('click', closeMessengerNote); // click outside the card closes it
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeFinalModal();
+    if (e.key === 'Escape'){
+      if (messengerNoteOverlay.classList.contains('show')) closeMessengerNote();
+      else closeFinalModal();
+    }
   });
 
   // thank-you modal controls — shown after she actually submits (sends or copies) her reply
@@ -1599,10 +1674,16 @@ Your schedule works best for me. 🌷</p>
     }
   });
 
-  confirmMessengerBtn.addEventListener('click', async () => {
-    // Messenger links can't carry pre-filled text, so we copy her answer to
-    // the clipboard first (best effort) then let the link open the chat —
-    // she just needs to paste and hit send once she's there.
+  // Tapping "Send via Messenger" no longer jumps straight to Messenger — it
+  // first shows a heads-up modal reminding her to paste the message, since
+  // Messenger links can't carry pre-filled text. The actual copy + hand-off
+  // only happens once she taps "Continue to Messenger" in that modal.
+  confirmMessengerBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    openMessengerNote();
+  });
+
+  document.getElementById('messengerContinueBtn').addEventListener('click', async () => {
     const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
     try {
       await navigator.clipboard.writeText(fullText);
@@ -1612,6 +1693,8 @@ Your schedule works best for me. 🌷</p>
     }
     statusFinal.classList.add('show');
     pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "💬" };
+    closeMessengerNote();
+    window.open(confirmMessengerBtn.href, '_blank', 'noopener');
   });
 
   copyAnswerBtn.addEventListener('click', async () => {
