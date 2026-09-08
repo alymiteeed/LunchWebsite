@@ -1517,6 +1517,9 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       <span class="thankyou-modal-icon" id="messengerNoteIcon">💬</span>
       <div class="thankyou-modal-title">Quick Heads Up!</div>
       <p class="thankyou-modal-text" id="messengerNoteText">Copying your keepsake image…</p>
+      <div class="image-preview-wrap" id="messengerNoteImgWrap" style="display:none; cursor:default;">
+        <img id="messengerNoteImg" alt="Your RSVP keepsake image — long-press to copy or save it">
+      </div>
       <button class="thankyou-modal-done" id="messengerNoteOkBtn" disabled>Preparing…</button>
       <button class="back-link" id="messengerNoteNeverMindBtn" style="margin-top:12px;">← never mind</button>
     </div>
@@ -1627,13 +1630,36 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   document.getElementById('modalCloseBtn').addEventListener('click', closeFinalModal);
   finalModalOverlay.addEventListener('click', closeFinalModal); // click outside the card closes it
 
-  // messenger heads-up modal controls — shown before handing off to the Messenger link
+  // messenger heads-up modal controls — shown before handing off to Messenger/Gmail/Mail app
   const messengerNoteOverlay = document.getElementById('messengerNoteOverlay');
   const messengerNoteOkBtn = document.getElementById('messengerNoteOkBtn');
+  const messengerNoteImgWrap = document.getElementById('messengerNoteImgWrap');
+  const messengerNoteImg = document.getElementById('messengerNoteImg');
+  let messengerNoteImgUrl = null;
   function openMessengerNote(){ messengerNoteOverlay.classList.add('show'); }
-  function closeMessengerNote(){ messengerNoteOverlay.classList.remove('show'); }
+  function closeMessengerNote(){
+    messengerNoteOverlay.classList.remove('show');
+    hideMessengerNoteImg();
+  }
   function setMessengerNoteText(html){ document.getElementById('messengerNoteText').innerHTML = html; }
   function setMessengerNoteIcon(icon){ document.getElementById('messengerNoteIcon').textContent = icon; }
+  // Shows the rendered keepsake image right inside the popup so she can long-press it to
+  // copy or save — the most reliable fallback across Android browsers and in-app webviews,
+  // since it uses the OS/browser's native long-press menu instead of a JS clipboard call.
+  function showMessengerNoteImg(blob){
+    hideMessengerNoteImg();
+    messengerNoteImgUrl = URL.createObjectURL(blob);
+    messengerNoteImg.classList.remove('loaded');
+    messengerNoteImg.onload = () => messengerNoteImg.classList.add('loaded');
+    messengerNoteImg.src = messengerNoteImgUrl;
+    messengerNoteImgWrap.style.display = 'block';
+  }
+  function hideMessengerNoteImg(){
+    messengerNoteImgWrap.style.display = 'none';
+    messengerNoteImg.classList.remove('loaded');
+    messengerNoteImg.src = '';
+    if (messengerNoteImgUrl){ URL.revokeObjectURL(messengerNoteImgUrl); messengerNoteImgUrl = null; }
+  }
   document.getElementById('messengerNoteCloseBtn').addEventListener('click', closeMessengerNote);
   document.getElementById('messengerNoteNeverMindBtn').addEventListener('click', closeMessengerNote);
   messengerNoteOverlay.addEventListener('click', closeMessengerNote); // click outside the card cancels, without opening Messenger
@@ -2091,6 +2117,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   // prepared in the background while she was reading the reminder.
   async function sendWithOutboundNote({ destinationLabel, entryLabel, icon, emoji, continueLabel, openNow, cantAutoText }){
     setMessengerNoteIcon(icon);
+    hideMessengerNoteImg();
     messengerNoteOkBtn.disabled = true;
     messengerNoteOkBtn.textContent = 'Preparing…';
     setMessengerNoteText(`${cantAutoText} so I'll copy your image to your clipboard first. Give me a sec…`);
@@ -2112,35 +2139,46 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     let copied = false;
     if (blob){
       // Copy just the image (no text) to the clipboard so she can paste it
-      // straight into the message once she gets there.
+      // straight into the message once she gets there. This is unreliable on
+      // several Android browsers and most in-app webviews (Messenger,
+      // Instagram, Facebook), which either lack the API or silently reject it.
       if (navigator.clipboard && window.ClipboardItem){
         try {
           await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
           copied = true;
         } catch (err){
-          copied = false; // fall through to the download fallback below
+          copied = false; // fall through to the on-screen fallback below
         }
       }
 
       if (!copied){
-        // Fallback: download the image so she can attach it from her
-        // gallery/downloads once she's in the message.
-        const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
-        const downloadUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = filename;
-        link.href = downloadUrl;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
+        // Fallback: show the image right in the popup so she can long-press it
+        // and pick "Copy image" or "Download image" — this uses the browser's
+        // own native menu instead of a JS clipboard call, so it works reliably
+        // even on Android browsers and in-app webviews where the clipboard
+        // API is missing or blocked. We also try an automatic download in the
+        // background in case that works too, but we never rely on it alone.
+        showMessengerNoteImg(blob);
+        try {
+          const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
+          const downloadUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.download = filename;
+          link.href = downloadUrl;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
+        } catch (err){
+          // ignore — the on-screen image is the reliable fallback regardless
+        }
       }
     }
 
     if (copied){
       setMessengerNoteText(`${cantAutoText} so I've copied your image to your clipboard. Once ${entryLabel} opens, just <strong>paste it in and hit send.</strong> ${emoji}`);
     } else if (blob){
-      setMessengerNoteText(`I've saved your image to your downloads instead — once ${entryLabel} opens, just <strong>attach it and hit send.</strong> ${emoji}`);
+      setMessengerNoteText(`${cantAutoText} and the clipboard copy didn't go through — <strong>long-press the image below</strong> and tap <strong>Copy image</strong> (or Download image), then attach it once ${entryLabel} opens. ${emoji}`);
     } else {
       setMessengerNoteText(`Once ${entryLabel} opens, just <strong>attach your image and hit send.</strong> ${emoji}`);
     }
