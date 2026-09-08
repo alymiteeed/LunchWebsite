@@ -1880,6 +1880,14 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   });
 
   document.getElementById('messengerContinueBtn').addEventListener('click', async () => {
+    // Open the tab RIGHT NOW, synchronously, while the browser still counts this
+    // as a direct response to the tap. If we wait until after the awaits below
+    // (image capture, clipboard write) to call window.open(), mobile Safari/Chrome
+    // no longer treat it as user-initiated and silently block it or leave it on
+    // a blank tab — which is why Messenger never actually opened. We open a blank
+    // tab now and navigate it to the Messenger URL once the async work is done.
+    const messengerWindow = window.open('', '_blank', 'noopener');
+
     statusFinal.textContent = "Copying your answer photo…";
     statusFinal.classList.add('show');
 
@@ -1920,7 +1928,16 @@ Would you be free to join me? Let me know if you’re in — your schedule works
 
     pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
     closeMessengerNote();
-    window.open(confirmMessengerBtn.href, '_blank', 'noopener');
+
+    if (messengerWindow){
+      // Navigate the tab we already opened above.
+      messengerWindow.location.href = confirmMessengerBtn.href;
+    } else {
+      // Popup was blocked even on the synchronous open (rare, but some browsers
+      // block ALL window.open calls) — fall back to navigating in the same tab
+      // so it still isn't a dead end.
+      window.location.href = confirmMessengerBtn.href;
+    }
   });
 
   // step 1 -> yes goes to the time step; no goes straight to the no-path
