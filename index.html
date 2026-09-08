@@ -633,24 +633,6 @@
   }
   @keyframes spin{ to{ transform: rotate(360deg); } }
 
-  .image-preview-copy-btn{
-    display:block;
-    width:100%;
-    margin-top: 10px;
-    padding: 13px;
-    border: 1px solid var(--hairline);
-    border-radius: 3px;
-    background: transparent;
-    color: var(--ink);
-    font-family:'Jost', sans-serif;
-    font-weight:500;
-    font-size: 13.5px;
-    letter-spacing:0.4px;
-    cursor:pointer;
-    transition: background .2s ease;
-  }
-  .image-preview-copy-btn:hover{ background:#f7f2e8; }
-  .image-preview-copy-btn:disabled,
   .thankyou-modal-done:disabled{ opacity:.5; cursor:not-allowed; }
   #imagePreviewStatus{ color: var(--green); font-weight: 600; }
   .modal-card{
@@ -1491,7 +1473,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
         <div class="rsvp-row">
           <button class="rsvp-btn yes" id="saveImageBtn" type="button">Save as Image</button>
         </div>
-        <div class="save-image-hint">Downloads a photo of your answer above — no screenshot needed. Feel free to send it back to me so I know your answer.</div>
+        <div class="save-image-hint">Downloads a photo of your answer above — no screenshot needed.</div>
       </div>
 
       <div class="send-options">
@@ -1534,7 +1516,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       <button class="modal-close" id="messengerNoteCloseBtn" aria-label="Close">✕</button>
       <span class="thankyou-modal-icon">✓</span>
       <div class="thankyou-modal-title">Quick Heads Up!</div>
-      <p class="thankyou-modal-text">Messenger can't auto-fill a message, so I'll copy your answer to your clipboard first. Once the chat opens, just <b>paste it in and hit send</b>.</p>
+      <p class="thankyou-modal-text">I'll get your keepsake image ready to go, then hand you straight to Messenger — so you can send the actual image instead of typing anything out.</p>
       <button class="thankyou-modal-done" id="messengerContinueBtn">Continue to Messenger</button>
       <button class="back-link" id="messengerCancelBtn" style="margin-top:12px;">← never mind</button>
     </div>
@@ -1556,7 +1538,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       </div>
       <p class="thankyou-modal-text" id="imagePreviewHint">Tap "Save Image" to download it to your device.</p>
       <button class="thankyou-modal-done" id="imagePreviewSaveBtn" disabled>Save Image</button>
-      <button class="image-preview-copy-btn" id="imagePreviewCopyBtn" style="display:none;" disabled>Copy Image</button>
       <div class="status" id="imagePreviewStatus"></div>
       <button class="back-link" id="imagePreviewCancelBtn" style="margin-top:12px;">Cancel</button>
     </div>
@@ -1782,8 +1763,8 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   // ---- save answer as image (final modal) ----------------------------------
   // Flow: tap "Save as Image" -> preview modal opens right away with a loading
   // spinner -> the keepsake renders and fades in -> she can zoom in to check
-  // it, then Save (native share sheet, falling back to a download) or Copy to
-  // clipboard, or back out with Cancel/✕/outside-tap without saving anything.
+  // it, then Save (native share sheet, falling back to a download), or back
+  // out with Cancel/✕/outside-tap without saving anything.
   const saveImageBtn = document.getElementById('saveImageBtn');
   const imagePreviewOverlay = document.getElementById('imagePreviewOverlay');
   const imagePreviewWrap = document.getElementById('imagePreviewWrap');
@@ -1791,7 +1772,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   const imagePreviewImg = document.getElementById('imagePreviewImg');
   const imagePreviewHint = document.getElementById('imagePreviewHint');
   const imagePreviewSaveBtn = document.getElementById('imagePreviewSaveBtn');
-  const imagePreviewCopyBtn = document.getElementById('imagePreviewCopyBtn');
   const imagePreviewStatus = document.getElementById('imagePreviewStatus');
   const imagePreviewCancelBtn = document.getElementById('imagePreviewCancelBtn');
   const imagePreviewCloseBtn = document.getElementById('imagePreviewCloseBtn');
@@ -1807,9 +1787,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     imagePreviewSpinner.style.display = 'flex';
     imagePreviewSaveBtn.disabled = true;
     imagePreviewSaveBtn.textContent = 'Save Image';
-    imagePreviewCopyBtn.disabled = true;
-    imagePreviewCopyBtn.textContent = 'Copy Image';
-    imagePreviewCopyBtn.style.display = 'block';
     imagePreviewStatus.classList.remove('show');
     imagePreviewStatus.textContent = '';
     imagePreviewCancelBtn.textContent = 'Cancel';
@@ -1835,7 +1812,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       ? 'Tap the image to zoom in. Press and hold it to save straight to Photos, or tap "Save Image" below.'
       : 'Tap the image to zoom in, then tap "Save Image" to download it.';
     imagePreviewSaveBtn.disabled = false;
-    imagePreviewCopyBtn.disabled = false;
   }
 
   function closeImagePreviewModal(){
@@ -1853,6 +1829,20 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     imagePreviewCancelBtn.textContent = 'Close';
   }
 
+  // renders the keepsake receipt to a PNG blob — shared by "Save as Image" and
+  // the "Send via Messenger" flow, so the image is only ever built one way.
+  async function renderReceiptImageBlob(){
+    const target = document.getElementById('receiptCapture');
+    const canvas = await html2canvas(target, {
+      backgroundColor: '#fffdf8',
+      scale: 2,
+      useCORS: true
+    });
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) throw new Error('canvas produced no image data');
+    return blob;
+  }
+
   // tap/click the preview to zoom in and check the details, tap again to shrink back
   imagePreviewWrap.addEventListener('click', () => {
     if (imagePreviewImg.style.display === 'none') return; // still loading
@@ -1860,19 +1850,12 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   });
 
   saveImageBtn.addEventListener('click', async () => {
-    const target = document.getElementById('receiptCapture');
     const originalLabel = saveImageBtn.textContent;
     saveImageBtn.textContent = 'Preparing image…';
     saveImageBtn.disabled = true;
     openImagePreviewModal(); // show the preview modal right away with a loading state
     try {
-      const canvas = await html2canvas(target, {
-        backgroundColor: '#fffdf8',
-        scale: 2,
-        useCORS: true
-      });
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      if (!blob) throw new Error('canvas produced no image data');
+      const blob = await renderReceiptImageBlob();
       showImagePreviewImage(blob);
     } catch (err){
       closeImagePreviewModal();
@@ -1889,7 +1872,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     const originalLabel = imagePreviewSaveBtn.textContent;
     imagePreviewSaveBtn.textContent = 'Saving…';
     imagePreviewSaveBtn.disabled = true;
-    imagePreviewCopyBtn.disabled = true;
 
     // Prefer the native share sheet where the device supports sharing files —
     // this is the most reliable "save to Photos" path on iOS/Android, since
@@ -1902,14 +1884,12 @@ Would you be free to join me? Let me know if you’re in — your schedule works
           showImagePreviewStatus('✓ Saved! Feel free to close this once you\'re done.');
           imagePreviewSaveBtn.textContent = originalLabel;
           imagePreviewSaveBtn.disabled = false;
-          imagePreviewCopyBtn.disabled = false;
           return;
         }
       }
     } catch (err){
       imagePreviewSaveBtn.textContent = originalLabel;
       imagePreviewSaveBtn.disabled = false;
-      imagePreviewCopyBtn.disabled = false;
       if (err && err.name === 'AbortError') return; // she backed out of the share sheet on purpose
       // otherwise fall through to the direct-download fallback below
     }
@@ -1928,36 +1908,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       alert("Sorry, couldn't save the image — try pressing and holding the image above instead.");
     } finally {
       imagePreviewSaveBtn.textContent = originalLabel;
-      imagePreviewSaveBtn.disabled = false;
-      imagePreviewCopyBtn.disabled = false;
-    }
-  });
-
-  imagePreviewCopyBtn.addEventListener('click', async () => {
-    if (!pendingImageBlob) return;
-    const originalLabel = imagePreviewCopyBtn.textContent;
-
-    // Not every browser (especially in-app browsers like Messenger/Instagram)
-    // supports copying images to the clipboard — check right at click time
-    // and point her at "Save Image" instead rather than showing a dead button.
-    if (!(navigator.clipboard && window.ClipboardItem)){
-      alert("Copying images isn't supported in this browser — try \"Save Image\" instead.");
-      return;
-    }
-
-    imagePreviewCopyBtn.textContent = 'Copying…';
-    imagePreviewCopyBtn.disabled = true;
-    imagePreviewSaveBtn.disabled = true;
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': pendingImageBlob })
-      ]);
-      showImagePreviewStatus('✓ Copied! You can paste it anywhere now.');
-    } catch (err){
-      alert("Sorry, couldn't copy the image on this device — try \"Save Image\" instead.");
-    } finally {
-      imagePreviewCopyBtn.textContent = originalLabel;
-      imagePreviewCopyBtn.disabled = false;
       imagePreviewSaveBtn.disabled = false;
     }
   });
@@ -2090,24 +2040,22 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       : `${base} I completely understand — hope to catch up soon!`;
   }
 
-  // --- iPhone / Mail-app reliability helpers -------------------------------
-  // mailto: links are unreliable on iOS in a few common situations:
-  //  1) inside an in-app browser (Instagram, Messenger, TikTok, etc.) — iOS
-  //     often blocks the app-switch to Mail entirely, silently.
-  //  2) when no Mail account is configured on the phone.
-  // In both cases the page just sits there with no feedback. We detect the
-  // risky case up front (so she gets a heads-up before tapping) and add a
-  // short fallback timer after tapping so a silent failure still gets a
-  // helpful message instead of just... nothing.
+  // --- cross-device Mail/Gmail reliability helpers -------------------------
+  // mailto: and target="_blank" links can silently fail to do anything on
+  // *any* device — not just iPhone: in-app browsers (Instagram, Messenger,
+  // TikTok, etc.) often block the app-switch entirely, and any device without
+  // a mail app/account configured just does nothing when tapped. The page
+  // otherwise just sits there with no feedback either way. So for every
+  // device we: show an upfront heads-up when we detect the riskiest case
+  // (an in-app browser), and start a short fallback timer after tapping so a
+  // silent failure still gets a helpful nudge instead of just... nothing.
   const uaString = navigator.userAgent || "";
   const isIOS = /iPhone|iPad|iPod/i.test(uaString) ||
     (uaString.includes('Macintosh') && navigator.maxTouchPoints > 1); // iPadOS 13+ reports as Mac
   const isLikelyInAppBrowser = /FBAN|FBAV|Instagram|Messenger|Line\/|MicroMessenger|TikTok|Twitter|GSA\//i.test(uaString);
 
   if (isLikelyInAppBrowser){
-    mailtoHint.textContent = isIOS
-      ? ""
-      : "";
+    mailtoHint.textContent = "Heads up: this looks like an in-app browser, which sometimes blocks opening Mail or Gmail. If nothing happens when you tap, try \"Send via Messenger\" or \"Save as Image\" instead.";
     mailtoHint.classList.add('show');
   }
 
@@ -2137,20 +2085,18 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     statusFinal.classList.add('show');
     pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
 
-    // Same in-app-browser risk as mailto: links — Instagram/TikTok/Messenger etc.
-    // often silently block target="_blank" from opening a new tab on iOS. If the
-    // page is still visible after a moment, nudge her toward the other options
-    // instead of leaving her guessing.
-    if (isLikelyInAppBrowser){
-      if (gmailFallbackTimer) clearTimeout(gmailFallbackTimer);
-      gmailFallbackTimer = setTimeout(() => {
-        if (pendingThankYou && document.visibilityState === 'visible'){
-          statusFinal.textContent = "Didn't open Gmail? Try \"Use my Mail app instead\" above, or \"Copy my answer\" below instead.";
-          statusFinal.classList.add('show');
-        }
-        gmailFallbackTimer = null;
-      }, 1200);
-    }
+    // target="_blank" can silently fail to open on any device — in-app
+    // browsers block it outright, and some desktop browsers/popup blockers
+    // can too. If the page is still visible after a moment, nudge her toward
+    // the other options instead of leaving her guessing.
+    if (gmailFallbackTimer) clearTimeout(gmailFallbackTimer);
+    gmailFallbackTimer = setTimeout(() => {
+      if (pendingThankYou && document.visibilityState === 'visible'){
+        statusFinal.textContent = "Didn't open Gmail? Try \"Use my Mail app instead\" above, or \"Send via Messenger\" / \"Save as Image\" below instead.";
+        statusFinal.classList.add('show');
+      }
+      gmailFallbackTimer = null;
+    }, 1200);
   });
 
   confirmMailtoBtn.addEventListener('click', () => {
@@ -2158,32 +2104,100 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     statusFinal.classList.add('show');
     pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
 
-    // iPhone fallback: if the page is still visible after ~1.2s, the Mail app
-    // most likely never opened (blocked in-app browser, no Mail account, etc.)
-    // — so let her know and point her at a working option instead of leaving
-    // her guessing.
-    if (isIOS){
-      if (mailtoFallbackTimer) clearTimeout(mailtoFallbackTimer);
-      mailtoFallbackTimer = setTimeout(() => {
-        if (pendingThankYou && document.visibilityState === 'visible'){
-          statusFinal.textContent = "Didn't open your Mail app? Try \"Send via Gmail\" above, or \"Copy my answer\" below instead.";
-          statusFinal.classList.add('show');
-        }
-        mailtoFallbackTimer = null;
-      }, 1200);
-    }
+    // mailto: links can go nowhere on any platform (blocked in-app browser,
+    // no mail account/app configured, desktop with nothing set up, etc.) —
+    // so let her know and point her at a working option instead of leaving
+    // her guessing, on every device, not just iPhone.
+    if (mailtoFallbackTimer) clearTimeout(mailtoFallbackTimer);
+    mailtoFallbackTimer = setTimeout(() => {
+      if (pendingThankYou && document.visibilityState === 'visible'){
+        statusFinal.textContent = "Didn't open your Mail app? Try \"Send via Gmail\" above, or \"Send via Messenger\" / \"Save as Image\" below instead.";
+        statusFinal.classList.add('show');
+      }
+      mailtoFallbackTimer = null;
+    }, 1200);
   });
 
   // Tapping "Send via Messenger" no longer jumps straight to Messenger — it
-  // first shows a heads-up modal reminding her to paste the message, since
-  // Messenger links can't carry pre-filled text. The actual copy + hand-off
-  // only happens once she taps "Continue to Messenger" in that modal.
+  // first shows a heads-up modal explaining that her keepsake image is about
+  // to be prepared. The actual image build + hand-off only happens once she
+  // taps "Continue to Messenger" in that modal.
   confirmMessengerBtn.addEventListener('click', (e) => {
     e.preventDefault();
     openMessengerNote();
   });
 
-  document.getElementById('messengerContinueBtn').addEventListener('click', async () => {
+  const messengerContinueBtn = document.getElementById('messengerContinueBtn');
+  messengerContinueBtn.addEventListener('click', async () => {
+    const originalLabel = messengerContinueBtn.textContent;
+    messengerContinueBtn.textContent = 'Preparing image…';
+    messengerContinueBtn.disabled = true;
+
+    let blob = null;
+    try {
+      blob = await renderReceiptImageBlob();
+    } catch (err){
+      blob = null; // fall back to the old text hand-off below if the image can't be built
+    }
+
+    messengerContinueBtn.textContent = originalLabel;
+    messengerContinueBtn.disabled = false;
+    closeMessengerNote();
+
+    if (blob){
+      const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
+
+      // Best: her device's own share sheet with the image already attached —
+      // she just picks Messenger and sends, no typing or pasting at all.
+      if (navigator.canShare && navigator.share){
+        try {
+          const file = new File([blob], filename, { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })){
+            await navigator.share({ files: [file], title: 'Lunch RSVP' });
+            statusFinal.textContent = "Opened your share sheet — pick Messenger to send your image.";
+            statusFinal.classList.add('show');
+            pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+            return;
+          }
+        } catch (err){
+          if (err && err.name === 'AbortError') return; // she backed out of the share sheet on purpose
+          // otherwise fall through to the clipboard-image path below
+        }
+      }
+
+      // Next best: copy the actual image (not text) to the clipboard, then open
+      // her specific Messenger chat directly — she just pastes the image in.
+      if (navigator.clipboard && window.ClipboardItem){
+        try {
+          await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
+          statusFinal.textContent = "Copied your image! Opening Messenger — just paste it in and send.";
+          statusFinal.classList.add('show');
+          pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+          window.open(confirmMessengerBtn.href, '_blank', 'noopener');
+          return;
+        } catch (err){
+          // fall through to the download fallback below
+        }
+      }
+
+      // Last resort: download the image and open Messenger so she can attach
+      // it from her gallery/downloads once the chat opens.
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = downloadUrl;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
+      statusFinal.textContent = "Saved your image — attach it once Messenger opens.";
+      statusFinal.classList.add('show');
+      pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+      window.open(confirmMessengerBtn.href, '_blank', 'noopener');
+      return;
+    }
+
+    // Couldn't generate the image at all — fall back to the original text hand-off.
     const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
     try {
       await navigator.clipboard.writeText(fullText);
@@ -2193,7 +2207,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     }
     statusFinal.classList.add('show');
     pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
-    closeMessengerNote();
     window.open(confirmMessengerBtn.href, '_blank', 'noopener');
   });
 
