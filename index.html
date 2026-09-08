@@ -1386,7 +1386,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       <button class="modal-close" id="messengerNoteCloseBtn" aria-label="Close">✕</button>
       <span class="thankyou-modal-icon">✓</span>
       <div class="thankyou-modal-title">Quick Heads Up!</div>
-      <p class="thankyou-modal-text">Messenger can't auto-fill a message or photo here, so I'll copy your answer and download a photo of your answer first. Once the chat opens, <b>attach the downloaded photo, paste the text, and hit send</b>.</p>
+      <p class="thankyou-modal-text">Messenger can't auto-fill a photo, so I'll copy the image of your answer to your clipboard first. Once the chat opens, just <b>paste it in and hit send</b>.</p>
       <button class="thankyou-modal-done" id="messengerContinueBtn">Continue to Messenger</button>
       <button class="back-link" id="messengerCancelBtn" style="margin-top:12px;">← never mind</button>
     </div>
@@ -1853,11 +1853,11 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     }
   });
 
-  // Tapping "Send via Messenger" no longer jumps straight to Messenger — it
-  // first shows a heads-up modal reminding her to paste the message, since
-  // Messenger links can't carry pre-filled text. The actual copy + hand-off
-  // only happens once she taps "Continue to Messenger" in that modal.
-  let pendingReceiptBlob = null;
+  // Tapping "Send via Messenger" immediately shows the heads-up modal (since
+  // Messenger links can't carry a pre-filled message or photo), while the
+  // receipt image renders quietly in the background so it's ready the
+  // moment she taps "Continue to Messenger".
+  let receiptImagePromise = null;
 
   // Renders the "Here's My Answer" receipt (buttons excluded) into a PNG,
   // so both the "Yes, I'm in!" and "Can't make it" answers can be sent as
@@ -1873,53 +1873,32 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     }
   }
 
-  confirmMessengerBtn.addEventListener('click', async (e) => {
+  confirmMessengerBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    statusFinal.textContent = "Preparing your answer photo…";
-    statusFinal.classList.add('show');
-
-    const blob = await captureReceiptImage();
-    const canWebShareFiles = blob && navigator.canShare &&
-      navigator.canShare({ files: [new File([blob], 'lunch-rsvp.png', { type: 'image/png' })] });
-
-    if (canWebShareFiles){
-      // Best path: hand the photo straight to the OS share sheet, where
-      // Messenger can be picked directly — no copy/paste needed.
-      const file = new File([blob], 'lunch-rsvp.png', { type: 'image/png' });
-      try {
-        await navigator.share({ files: [file], title: 'Lunch RSVP', text: lastSubject });
-        statusFinal.textContent = "Shared! If you picked Messenger, your photo is on its way.";
-        pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
-        resolvePendingThankYou();
-        return;
-      } catch (err) {
-        if (err && err.name === 'AbortError'){
-          statusFinal.textContent = "";
-          statusFinal.classList.remove('show');
-          return;
-        }
-        // fall through to the manual flow below
-      }
-    }
-
-    // Fallback (e.g. desktop browsers without file sharing): download the
-    // photo and hand off to Messenger with the text copied to clipboard.
-    pendingReceiptBlob = blob;
-    statusFinal.classList.remove('show');
+    receiptImagePromise = captureReceiptImage(); // kicked off now, awaited on "Continue"
     openMessengerNote();
   });
 
   document.getElementById('messengerContinueBtn').addEventListener('click', async () => {
-    const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
-    try {
-      await navigator.clipboard.writeText(fullText);
-      statusFinal.textContent = "Copied your answer! ";
-    } catch (err) {
-      statusFinal.textContent = "Opening Messenger — copy your answer above and paste it in the chat. ";
+    statusFinal.textContent = "Copying your answer photo…";
+    statusFinal.classList.add('show');
+
+    const blob = receiptImagePromise ? await receiptImagePromise : await captureReceiptImage();
+    let copiedImage = false;
+
+    if (blob && navigator.clipboard && window.ClipboardItem){
+      try {
+        await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
+        copiedImage = true;
+      } catch (err) { /* clipboard image write unsupported or blocked — fall back below */ }
     }
 
-    if (pendingReceiptBlob){
-      const url = URL.createObjectURL(pendingReceiptBlob);
+    if (copiedImage){
+      statusFinal.textContent = "Copied your answer photo! Opening Messenger — just paste it in and hit send.";
+    } else if (blob){
+      // Fallback for browsers that can't copy images to the clipboard:
+      // download the photo instead so it can be attached manually.
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = 'lunch-rsvp.png';
@@ -1927,11 +1906,18 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
-      statusFinal.textContent += "Your answer photo downloaded — attach it in the chat along with your pasted answer.";
+      statusFinal.textContent = "Your answer photo downloaded — attach it in the chat and send.";
     } else {
-      statusFinal.textContent += "Opening Messenger — just paste and send.";
+      // Last resort: at least get the text answer onto the clipboard.
+      const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
+      try {
+        await navigator.clipboard.writeText(fullText);
+        statusFinal.textContent = "Copied your answer! Opening Messenger — just paste it in and hit send.";
+      } catch (err) {
+        statusFinal.textContent = "Opening Messenger — copy your answer above and paste it in the chat.";
+      }
     }
-    statusFinal.classList.add('show');
+
     pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
     closeMessengerNote();
     window.open(confirmMessengerBtn.href, '_blank', 'noopener');
