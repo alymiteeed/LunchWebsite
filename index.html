@@ -134,90 +134,24 @@
     box-sizing: border-box;
   }
   .card::before, .card::after,
-  .modal-card::before, .modal-card::after,
-  .receipt-capture::before, .receipt-capture::after{
+  .modal-card::before, .modal-card::after{
     content:"";
     position:absolute;
     width: 22px;
     height: 22px;
     pointer-events:none;
   }
-  .card::before, .modal-card::before, .receipt-capture::before{
+  .card::before, .modal-card::before{
     top: 10px; left: 10px;
     border-top: 1px solid var(--mustard);
     border-left: 1px solid var(--mustard);
   }
-  .card::after, .modal-card::after, .receipt-capture::after{
+  .card::after, .modal-card::after{
     bottom: 10px; right: 10px;
     border-bottom: 1px solid var(--mustard);
     border-right: 1px solid var(--mustard);
   }
-  .card, .modal-card, .receipt-capture{ border-top: 3px solid var(--mustard); }
-
-  /* standalone "keepsake" card — this is the exact element saved as an image */
-  .receipt-capture{
-    background: var(--paper);
-    border: 1px solid var(--hairline);
-    border-radius: 6px;
-    padding: 22px 20px 20px;
-    margin-bottom: 22px;
-    position: relative;
-    box-sizing: border-box;
-  }
-
-  .capture-eyebrow{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    width: 100%;
-    max-width: 110px;
-    margin: 2px auto 10px;
-  }
-  .capture-eyebrow::before, .capture-eyebrow::after{
-    content:"";
-    flex:1;
-    height:1px;
-    background: var(--hairline);
-  }
-  .capture-eyebrow span{
-    display:block;
-    flex-shrink:0;
-    width:5px;
-    height:5px;
-    margin: 0 10px;
-    background: var(--mustard);
-    transform: rotate(45deg);
-  }
-  .capture-kicker{
-    text-align:center;
-    font-family: 'Jost', sans-serif;
-    font-weight: 600;
-    font-size: 10px;
-    letter-spacing: 1.8px;
-    text-transform: uppercase;
-    color: #9c8a72;
-    margin-bottom: 16px;
-  }
-
-  .capture-footer{ margin-top: 22px; text-align: center; }
-  .capture-divider{ width: 36px; height: 1px; background: var(--hairline); margin: 0 auto 14px; }
-  .capture-footer-text{
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
-    font-weight: 500;
-    font-size: 14.5px;
-    line-height: 1.55;
-    color: var(--chalk);
-    margin: 0 0 6px;
-  }
-  .capture-footer-date{
-    display:block;
-    font-family: 'Jost', sans-serif;
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: #9c8a72;
-  }
+  .card, .modal-card{ border-top: 3px solid var(--mustard); }
 
   .card-title{
     position: relative;
@@ -240,7 +174,6 @@
   }
 
   .detail{ display:flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--paper-shadow); font-size: 15px; }
-  .detail.picker{ border-bottom: none; }
   .detail:last-of-type{ border-bottom: none; }
   .detail .label{ min-width: 84px; text-transform:uppercase; font-size:10.5px; letter-spacing:1.2px; color:#9c8a72; padding-top:3px; font-weight:600; }
   .detail .value{ flex:1; line-height:1.55; font-weight: 500; }
@@ -259,7 +192,7 @@
     outline: none;
   }
   .detail.picker input:focus{ box-shadow: 0 0 0 2px rgba(176,141,87,0.35); border-color: var(--mustard); }
-  .hint{ font-size: 12px; color: #9c8a72; margin: -10px 0 16px; font-style: italic; text-align: center; }
+  .hint{ font-size: 12px; color: #9c8a72; text-align: center; margin: 0 0 16px; font-style: italic; }
 
   /* step 1: the question */
   .question{
@@ -575,52 +508,6 @@
   }
   .modal-overlay.show{ display:flex; }
   #messengerNoteOverlay{ z-index: 70; }
-
-  /* image preview modal — shows the generated keepsake image before saving */
-  .image-preview-wrap{
-    margin: 4px 0 18px;
-    border-radius: 6px;
-    overflow: auto;
-    border: 1px solid var(--hairline);
-    box-shadow: 0 12px 30px -14px rgba(35,32,28,0.35);
-    background: var(--paper);
-    max-height: 55vh;
-    cursor: zoom-in;
-  }
-  .image-preview-wrap.zoomed{ cursor: zoom-out; max-height: 65vh; }
-  .image-preview-wrap img{
-    display: block;
-    width: 100%;
-    height: auto;
-    opacity: 0;
-    transition: opacity .35s ease, transform .25s ease;
-    transform-origin: top center;
-  }
-  .image-preview-wrap img.loaded{ opacity: 1; }
-  .image-preview-wrap.zoomed img{ width: auto; max-width: none; }
-
-  .image-preview-spinner{
-    display:flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 54px 20px;
-    color: #9c8a72;
-    font-size: 12.5px;
-    letter-spacing: 0.4px;
-  }
-  .image-preview-spinner .spin-ring{
-    width: 30px;
-    height: 30px;
-    border: 3px solid var(--hairline);
-    border-top-color: var(--mustard);
-    border-radius: 50%;
-    animation: spin .8s linear infinite;
-  }
-  @keyframes spin{ to{ transform: rotate(360deg); } }
-
-  .thankyou-modal-done:disabled{ opacity:.5; cursor:not-allowed; }
   .modal-card{
     background: var(--paper);
     color: var(--ink);
@@ -898,51 +785,6 @@
     pointer-events:none;
   }
 
-  /* corkboard receipt tilt (fixes tilt-l/tilt-r classes that had no CSS behind them) */
-  .tilt-l{ transform: rotate(-3deg); }
-  .tilt-r{ transform: rotate(2.5deg); }
-
-  /* embedded map + directions link (location step) */
-  .map-embed{
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid var(--hairline);
-    margin: 4px 0 8px;
-    background: #f7f2e8;
-  }
-  .map-embed iframe{ width:100%; height:100%; border:0; display:block; }
-  .map-link{
-    display:inline-block;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    color: var(--mustard);
-    text-decoration: none;
-    margin-bottom: 18px;
-  }
-  .map-link:hover{ text-decoration: underline; }
-
-  /* live weather check for the chosen date (location step) */
-  .weather-widget{
-    background: #f7f2e8;
-    border: 1px solid var(--hairline);
-    border-radius: 4px;
-    padding: 12px 14px;
-    margin-bottom: 20px;
-  }
-  .weather-label{
-    font-size: 10.5px;
-    text-transform: uppercase;
-    letter-spacing: 1.1px;
-    font-weight: 600;
-    color: #9c8a72;
-    margin-bottom: 6px;
-  }
-  .weather-body{ font-size: 13.5px; font-weight: 500; color: var(--ink); line-height: 1.5; }
-
   footer{
     margin-top: 32px;
     font-family:'Jost', sans-serif;
@@ -1074,6 +916,53 @@
     .menu-section{ max-width: 600px; }
     .menu-card{ max-width: 176px; }
   }
+
+  /* ============ LOCATION MAP & WEATHER ============ */
+  .info-block{ margin-top: 20px; }
+  .info-block-label{
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-weight: 600;
+    color: #9c8a72;
+    margin-bottom: 8px;
+  }
+  .map-frame{
+    width: 100%;
+    height: 160px;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    overflow: hidden;
+    background: #f7f2e8;
+  }
+  .map-frame iframe{ width:100%; height:100%; border:0; display:block; }
+  .map-link{
+    display:block;
+    text-align:center;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--mustard);
+    text-decoration: none;
+  }
+  .map-link:hover{ text-decoration: underline; }
+
+  .weather-card{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    background: #f7f2e8;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin-top: 10px;
+  }
+  .weather-icon{ font-size: 30px; line-height:1; flex-shrink:0; }
+  .weather-info{ flex:1; }
+  .weather-temp{ font-family:'Cormorant Garamond', serif; font-weight:600; font-size: 19px; color: var(--chalk); }
+  .weather-desc{ font-size: 12px; color: var(--ink); margin-top:2px; }
+  .weather-rain{ font-size: 11px; color:#9c8a72; margin-top:2px; }
+  .weather-note{ font-size: 11.5px; font-style: italic; color: #9c8a72; text-align:center; margin-top: 8px; line-height:1.5; }
 
   /* ============ RESPONSIVE BREAKPOINTS ============ */
 
@@ -1337,6 +1226,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
           <input type="time" id="pickTime" value="12:00">
         </div>
       </div>
+
       <div class="hint">pick whatever date and time actually works for you</div>
 
       <div class="rsvp-row">
@@ -1355,14 +1245,25 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       <div class="detail"><div class="label">Where</div><div class="value" id="dWhere">SM North</div></div>
       <div class="detail"><div class="label">Vibe</div><div class="value" id="dVibe">Lunch with unlimited kwento — refills included</div></div>
 
-      <div class="map-embed" id="locationMap">
-        <iframe src="https://www.google.com/maps?q=SM%20North%20EDSA%2C%20Quezon%20City&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map to the lunch spot"></iframe>
+      <div class="info-block">
+        <div class="info-block-label">Map</div>
+        <div class="map-frame">
+          <iframe id="locationMap" src="" title="Location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        </div>
+        <a class="map-link" id="mapLink" href="#" target="_blank" rel="noopener">Open in Google Maps →</a>
       </div>
-      <a class="map-link" id="directionsLink" href="https://www.google.com/maps/dir/?api=1&destination=SM%20North%20EDSA%2C%20Quezon%20City" target="_blank" rel="noopener">Get directions →</a>
 
-      <div class="weather-widget">
-        <div class="weather-label">Weather Check</div>
-        <div class="weather-body" id="weatherBody">Pick a date above to see the forecast.</div>
+      <div class="info-block">
+        <div class="info-block-label">Weather Forecast</div>
+        <div class="weather-card" id="weatherCard">
+          <span class="weather-icon" id="weatherIcon">⏳</span>
+          <div class="weather-info">
+            <div class="weather-temp" id="weatherTemp">Loading…</div>
+            <div class="weather-desc" id="weatherDesc">Fetching the forecast</div>
+            <div class="weather-rain" id="weatherRain"></div>
+          </div>
+        </div>
+        <div class="weather-note" id="weatherNote"></div>
       </div>
 
       <div class="note-field">
@@ -1412,46 +1313,37 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   <div class="modal-overlay" id="finalModalOverlay">
     <div class="modal-card" id="stepFinal" onclick="event.stopPropagation()">
       <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
+      <div id="shareableReceipt">
+      <span class="receipt-tag" id="receiptTag"></span>
+      <div class="card-title">Here's My Answer</div>
 
-      <div class="receipt-capture" id="receiptCapture">
-        <div class="capture-eyebrow"><span></span></div>
-        <div class="capture-kicker">A Little Keepsake</div>
+      <div class="thankyou-banner">Thank you so much for letting me know.</div>
 
-        <span class="receipt-tag" id="receiptTag"></span>
-        <div class="card-title">Here's My Answer</div>
+      <div class="receipt-line" id="rowRSVP">
+        <div class="rl-label">RSVP</div>
+        <div class="rl-value" id="rvRSVP">—</div>
+      </div>
+      <div class="receipt-line" id="rowWhen" style="display:none;">
+        <div class="rl-label">When</div>
+        <div class="rl-value" id="rvWhen">—</div>
+      </div>
+      <div class="receipt-line" id="rowWhere" style="display:none;">
+        <div class="rl-label" id="whereLabel">Where</div>
+        <div class="rl-value" id="rvWhere">—</div>
+      </div>
+      <div class="receipt-line" id="rowVibe" style="display:none;">
+        <div class="rl-label">Vibe</div>
+        <div class="rl-value" id="rvVibe">—</div>
+      </div>
+      <div class="receipt-line" id="rowReschedule" style="display:none;">
+        <div class="rl-label">Reschedule to</div>
+        <div class="rl-value" id="rvReschedule">—</div>
+      </div>
+      <div class="receipt-line" id="rowNote" style="display:none;">
+        <div class="rl-label">Note</div>
+        <div class="rl-value" id="rvNote">—</div>
+      </div>
 
-        <div class="thankyou-banner">Thank you so much for letting me know.</div>
-
-        <div class="receipt-line" id="rowRSVP">
-          <div class="rl-label">RSVP</div>
-          <div class="rl-value" id="rvRSVP">—</div>
-        </div>
-        <div class="receipt-line" id="rowWhen" style="display:none;">
-          <div class="rl-label">When</div>
-          <div class="rl-value" id="rvWhen">—</div>
-        </div>
-        <div class="receipt-line" id="rowWhere" style="display:none;">
-          <div class="rl-label" id="whereLabel">Where</div>
-          <div class="rl-value" id="rvWhere">—</div>
-        </div>
-        <div class="receipt-line" id="rowVibe" style="display:none;">
-          <div class="rl-label">Vibe</div>
-          <div class="rl-value" id="rvVibe">—</div>
-        </div>
-        <div class="receipt-line" id="rowReschedule" style="display:none;">
-          <div class="rl-label">Reschedule to</div>
-          <div class="rl-value" id="rvReschedule">—</div>
-        </div>
-        <div class="receipt-line" id="rowNote" style="display:none;">
-          <div class="rl-label">Note</div>
-          <div class="rl-value" id="rvNote">—</div>
-        </div>
-
-        <div class="capture-footer">
-          <div class="capture-divider"></div>
-          <p class="capture-footer-text" id="captureFooterText">Saved with love, for the next lunch and many more after.</p>
-          <span class="capture-footer-date" id="captureDate"></span>
-        </div>
       </div>
 
       <div class="send-options">
@@ -1461,7 +1353,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
         </div>
 
         <div class="send-divider">or send by email</div>
-        <div class="email-device-hint">On a laptop or desktop, use Gmail. On your phone, use your Mail app instead. Either way, we'll remind you to download or copy your image first — it opens addressed and ready, just attach it before you send.</div>
+        <div class="email-device-hint">On a laptop or desktop, use Gmail. On your phone, use your Mail app instead.</div>
         <div class="rsvp-row">
           <a class="rsvp-btn yes" id="confirmEmailBtn" href="#" target="_blank" rel="noopener">Send via Gmail</a>
         </div>
@@ -1486,50 +1378,147 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     </div>
   </div>
 
-  <!-- OUTBOUND REMINDER POPUP: appears the moment "Send via Messenger" / "Send via
-       Gmail" / "Use my Mail app instead" is tapped and shows a heads-up BEFORE that
-       destination opens — she reads it, then taps "Continue to …" herself to proceed. -->
+  <!-- MESSENGER HEADS-UP MODAL: pops up when "Send via Messenger" is tapped, since
+       Messenger links can't pre-fill text — this reminds her to paste before it
+       hands off to the Messenger link. -->
   <div class="modal-overlay" id="messengerNoteOverlay">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close" id="messengerNoteCloseBtn" aria-label="Close">✕</button>
-      <span class="thankyou-modal-icon" id="messengerNoteIcon">💬</span>
+      <span class="thankyou-modal-icon">✓</span>
       <div class="thankyou-modal-title">Quick Heads Up!</div>
-      <p class="thankyou-modal-text" id="messengerNoteText">Copying your keepsake image…</p>
-      <div class="image-preview-wrap" id="messengerNoteImgWrap" style="display:none; cursor:default;">
-        <img id="messengerNoteImg" alt="Your RSVP keepsake image — long-press to copy or save it">
-      </div>
-      <button class="thankyou-modal-done" id="messengerNoteOkBtn" disabled>Preparing…</button>
-      <button class="back-link" id="messengerNoteNeverMindBtn" style="margin-top:12px;">← never mind</button>
+      <p class="thankyou-modal-text">Messenger can't auto-fill a message or photo here, so I'll copy your answer and download a photo of your answer first. Once the chat opens, <b>attach the downloaded photo, paste the text, and hit send</b>.</p>
+      <button class="thankyou-modal-done" id="messengerContinueBtn">Continue to Messenger</button>
+      <button class="back-link" id="messengerCancelBtn" style="margin-top:12px;">← never mind</button>
     </div>
   </div>
 
   <footer>tap Messenger, Gmail, or Mail app to send your reply</footer>
 
-<!-- used to render the answer receipt into a shareable PNG image -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
   // ---- EDIT THESE TO MATCH YOUR PLAN ----
   const RECIPIENT_EMAIL = "alyssamaranan01@gmail.com";     // <-- put YOUR email here
   const EVENT_WHERE = "SM North";
   const EVENT_VIBE  = "Lunch with unlimited kwento — refills included";
-  // Coordinates + search text for the map and weather widgets on the location step.
-  // Update these if EVENT_WHERE above changes.
-  const EVENT_LAT = 14.6564;
-  const EVENT_LON = 121.0298;
-  const EVENT_MAP_QUERY = "SM North EDSA, Quezon City";
   // Your Facebook Messenger username (the part after m.me/ in your personal
   // Messenger link, e.g. "https://m.me/john.doe.123" -> "john.doe.123").
-  // The m.me link opens a chat with you directly (on the app if installed,
-  // or in the browser if not) on any device — a plain facebook.com profile
-  // link would only open your profile page and require an extra tap.
   // Messenger links can't pre-fill the message text, so tapping the button
-  // below gets her image ready to hand off first, then opens the chat with
-  // you so she just has to paste/attach and send.
+  // below copies her answer to the clipboard first, then opens a chat with
+  // you so she just has to paste and send.
   const MESSENGER_USERNAME = "alymaranan.03"; // <-- put YOUR m.me username here
   // ----------------------------------------
 
   document.getElementById('dWhere').textContent = EVENT_WHERE;
   document.getElementById('dVibe').textContent = EVENT_VIBE;
+
+  // ---- MAP + WEATHER FORECAST (no API key needed) ----
+  // Fallback coordinates for the default spot, used if the geocoder can't
+  // find a match (e.g. offline). Replace with your own venue's coordinates
+  // if you like.
+  const DEFAULT_LOCATION_COORDS = { lat: 14.6567, lon: 121.0296 }; // SM North EDSA, Quezon City
+
+  const WEATHER_CODES = {
+    0:  { icon: '☀️', label: 'Clear sky' },
+    1:  { icon: '🌤️', label: 'Mostly clear' },
+    2:  { icon: '⛅', label: 'Partly cloudy' },
+    3:  { icon: '☁️', label: 'Overcast' },
+    45: { icon: '🌫️', label: 'Foggy' },
+    48: { icon: '🌫️', label: 'Foggy' },
+    51: { icon: '🌦️', label: 'Light drizzle' },
+    53: { icon: '🌦️', label: 'Drizzle' },
+    55: { icon: '🌦️', label: 'Heavy drizzle' },
+    56: { icon: '🌧️', label: 'Freezing drizzle' },
+    57: { icon: '🌧️', label: 'Freezing drizzle' },
+    61: { icon: '🌧️', label: 'Light rain' },
+    63: { icon: '🌧️', label: 'Rain' },
+    65: { icon: '🌧️', label: 'Heavy rain' },
+    66: { icon: '🌧️', label: 'Freezing rain' },
+    67: { icon: '🌧️', label: 'Freezing rain' },
+    71: { icon: '❄️', label: 'Light snow' },
+    73: { icon: '❄️', label: 'Snow' },
+    75: { icon: '❄️', label: 'Heavy snow' },
+    77: { icon: '❄️', label: 'Snow grains' },
+    80: { icon: '🌦️', label: 'Rain showers' },
+    81: { icon: '🌦️', label: 'Rain showers' },
+    82: { icon: '🌧️', label: 'Violent showers' },
+    85: { icon: '🌨️', label: 'Snow showers' },
+    86: { icon: '🌨️', label: 'Snow showers' },
+    95: { icon: '⛈️', label: 'Thunderstorm' },
+    96: { icon: '⛈️', label: 'Thunderstorm with hail' },
+    99: { icon: '⛈️', label: 'Thunderstorm with hail' }
+  };
+
+  const geocodeCache = {};
+  async function geocodeLocation(query){
+    if (geocodeCache[query]) return geocodeCache[query];
+    try {
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`);
+      const data = await res.json();
+      if (data && data.results && data.results.length){
+        const coords = { lat: data.results[0].latitude, lon: data.results[0].longitude };
+        geocodeCache[query] = coords;
+        return coords;
+      }
+    } catch (err) { /* fall through to default */ }
+    return null;
+  }
+
+  // Updates both the embedded map and the weather forecast card for a given
+  // place + date. Called when she reaches the location step, and again if
+  // she types in a different spot.
+  async function updateMapAndWeather(locationText, dateStr){
+    // map: a plain Google Maps search embed needs no API key
+    const mapQuery = encodeURIComponent(`${locationText}, Philippines`);
+    document.getElementById('locationMap').src = `https://www.google.com/maps?q=${mapQuery}&output=embed`;
+    document.getElementById('mapLink').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+
+    const weatherIcon = document.getElementById('weatherIcon');
+    const weatherTemp = document.getElementById('weatherTemp');
+    const weatherDesc = document.getElementById('weatherDesc');
+    const weatherRain = document.getElementById('weatherRain');
+    const weatherNote = document.getElementById('weatherNote');
+    weatherIcon.textContent = '⏳';
+    weatherTemp.textContent = 'Loading…';
+    weatherDesc.textContent = 'Fetching the forecast';
+    weatherRain.textContent = '';
+    weatherNote.textContent = '';
+
+    let coords = await geocodeLocation(locationText);
+    if (!coords) coords = DEFAULT_LOCATION_COORDS;
+
+    try {
+      const params = new URLSearchParams({
+        latitude: coords.lat,
+        longitude: coords.lon,
+        daily: 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+        timezone: 'Asia/Manila'
+      });
+      if (dateStr){ params.set('start_date', dateStr); params.set('end_date', dateStr); }
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`);
+      const data = await res.json();
+      if (data && data.daily && data.daily.time && data.daily.time.length){
+        const code = data.daily.weathercode[0];
+        const hi = Math.round(data.daily.temperature_2m_max[0]);
+        const lo = Math.round(data.daily.temperature_2m_min[0]);
+        const rain = data.daily.precipitation_probability_max ? data.daily.precipitation_probability_max[0] : null;
+        const info = WEATHER_CODES[code] || { icon: '🌡️', label: 'Forecast' };
+        weatherIcon.textContent = info.icon;
+        weatherTemp.textContent = `${hi}°C / ${lo}°C`;
+        weatherDesc.textContent = info.label;
+        weatherRain.textContent = (rain !== null) ? `${rain}% chance of rain` : '';
+      } else {
+        weatherIcon.textContent = '🌡️';
+        weatherTemp.textContent = '—';
+        weatherDesc.textContent = 'Forecast not available yet';
+        weatherNote.textContent = 'Forecasts only cover the next ~2 weeks — check back closer to the date.';
+      }
+    } catch (err){
+      weatherIcon.textContent = '🌡️';
+      weatherTemp.textContent = '—';
+      weatherDesc.textContent = "Couldn't load the forecast";
+      weatherNote.textContent = 'Check your connection and try again.';
+    }
+  }
 
   // default the "When Are You Free" date picker to today's actual date
   function todayISO(){
@@ -1590,39 +1579,13 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   document.getElementById('modalCloseBtn').addEventListener('click', closeFinalModal);
   finalModalOverlay.addEventListener('click', closeFinalModal); // click outside the card closes it
 
-  // messenger heads-up modal controls — shown before handing off to Messenger/Gmail/Mail app
+  // messenger heads-up modal controls — shown before handing off to the Messenger link
   const messengerNoteOverlay = document.getElementById('messengerNoteOverlay');
-  const messengerNoteOkBtn = document.getElementById('messengerNoteOkBtn');
-  const messengerNoteImgWrap = document.getElementById('messengerNoteImgWrap');
-  const messengerNoteImg = document.getElementById('messengerNoteImg');
-  let messengerNoteImgUrl = null;
   function openMessengerNote(){ messengerNoteOverlay.classList.add('show'); }
-  function closeMessengerNote(){
-    messengerNoteOverlay.classList.remove('show');
-    hideMessengerNoteImg();
-  }
-  function setMessengerNoteText(html){ document.getElementById('messengerNoteText').innerHTML = html; }
-  function setMessengerNoteIcon(icon){ document.getElementById('messengerNoteIcon').textContent = icon; }
-  // Shows the rendered keepsake image right inside the popup so she can long-press it to
-  // copy or save — the most reliable fallback across Android browsers and in-app webviews,
-  // since it uses the OS/browser's native long-press menu instead of a JS clipboard call.
-  function showMessengerNoteImg(blob){
-    hideMessengerNoteImg();
-    messengerNoteImgUrl = URL.createObjectURL(blob);
-    messengerNoteImg.classList.remove('loaded');
-    messengerNoteImg.onload = () => messengerNoteImg.classList.add('loaded');
-    messengerNoteImg.src = messengerNoteImgUrl;
-    messengerNoteImgWrap.style.display = 'block';
-  }
-  function hideMessengerNoteImg(){
-    messengerNoteImgWrap.style.display = 'none';
-    messengerNoteImg.classList.remove('loaded');
-    messengerNoteImg.src = '';
-    if (messengerNoteImgUrl){ URL.revokeObjectURL(messengerNoteImgUrl); messengerNoteImgUrl = null; }
-  }
+  function closeMessengerNote(){ messengerNoteOverlay.classList.remove('show'); }
   document.getElementById('messengerNoteCloseBtn').addEventListener('click', closeMessengerNote);
-  document.getElementById('messengerNoteNeverMindBtn').addEventListener('click', closeMessengerNote);
-  messengerNoteOverlay.addEventListener('click', closeMessengerNote); // click outside the card cancels, without opening Messenger
+  document.getElementById('messengerCancelBtn').addEventListener('click', closeMessengerNote);
+  messengerNoteOverlay.addEventListener('click', closeMessengerNote); // click outside the card closes it
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape'){
@@ -1686,81 +1649,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     return `${weekday}, ${dateLabel}`;
   }
 
-  function formatCaptureDate(){
-    return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  }
-
-  // ---- map + weather (location step) --------------------------------------
-  function updateLocationExtras(){
-    const customLoc = document.getElementById('suggestLocation').value.trim();
-    const mapQuery = customLoc || EVENT_MAP_QUERY;
-    const iframe = document.querySelector('#locationMap iframe');
-    iframe.src = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
-    document.getElementById('directionsLink').href =
-      `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
-  }
-
-  function describeWeatherCode(code){
-    const map = {
-      0: ['☀️', 'Clear skies'], 1: ['🌤️', 'Mostly clear'], 2: ['⛅', 'Partly cloudy'],
-      3: ['☁️', 'Overcast'], 45: ['🌫️', 'Foggy'], 48: ['🌫️', 'Foggy'],
-      51: ['🌦️', 'Light drizzle'], 53: ['🌦️', 'Drizzle'], 55: ['🌦️', 'Heavy drizzle'],
-      61: ['🌧️', 'Light rain'], 63: ['🌧️', 'Rain'], 65: ['🌧️', 'Heavy rain'],
-      80: ['🌦️', 'Rain showers'], 81: ['🌦️', 'Rain showers'], 82: ['⛈️', 'Violent showers'],
-      95: ['⛈️', 'Thunderstorms'], 96: ['⛈️', 'Thunderstorms'], 99: ['⛈️', 'Thunderstorms']
-    };
-    return map[code] ? { icon: map[code][0], label: map[code][1] } : { icon: '🌡️', label: 'Forecast available' };
-  }
-
-  // Uses Open-Meteo (no API key needed). Forecasts only go out ~16 days, so
-  // dates further out than that show a friendly "check back later" message.
-  async function fetchWeatherForDate(dateStr){
-    const weatherBody = document.getElementById('weatherBody');
-    if (!weatherBody) return;
-    if (!dateStr){
-      weatherBody.textContent = "Pick a date above to see the forecast.";
-      return;
-    }
-    const target = new Date(dateStr + 'T00:00:00');
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const diffDays = Math.round((target - today) / 86400000);
-    if (diffDays < 0){
-      weatherBody.textContent = "That date's in the past — pick a new one.";
-      return;
-    }
-    if (diffDays > 15){
-      weatherBody.textContent = `Too far out to forecast yet — check back closer to ${formatRescheduleDate(dateStr)}.`;
-      return;
-    }
-    weatherBody.textContent = "Checking the forecast…";
-    try{
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${EVENT_LAT}&longitude=${EVENT_LON}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FManila&start_date=${dateStr}&end_date=${dateStr}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('weather fetch failed');
-      const data = await res.json();
-      const code = data.daily.weathercode[0];
-      const hi = Math.round(data.daily.temperature_2m_max[0]);
-      const lo = Math.round(data.daily.temperature_2m_min[0]);
-      const { icon, label } = describeWeatherCode(code);
-      weatherBody.textContent = `${icon} ${label}, ${lo}°–${hi}°C`;
-    } catch (err){
-      weatherBody.textContent = "Couldn't load the forecast right now — check your weather app closer to the day.";
-    }
-  }
-
-  // renders the keepsake receipt to a PNG blob — used by the Messenger/Gmail/Mail app flow.
-  async function renderReceiptImageBlob(){
-    const target = document.getElementById('receiptCapture');
-    const canvas = await html2canvas(target, {
-      backgroundColor: '#fffdf8',
-      scale: 2,
-      useCORS: true
-    });
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-    if (!blob) throw new Error('canvas produced no image data');
-    return blob;
-  }
-
   function buildMailto(subject, body){
     return `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
@@ -1801,8 +1689,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     receiptTag.textContent = "I'm in";
     receiptTag.className = "receipt-tag yes";
     document.querySelector('.thankyou-banner').textContent = "Thank you so much for saying yes — I’m really looking forward to catching up over lunch.";
-    document.getElementById('captureFooterText').textContent = "Looking forward to the stories, laughter, and catch-up ahead.";
-    document.getElementById('captureDate').textContent = `Answered ${formatCaptureDate()}`;
 
     document.getElementById('rvRSVP').textContent = "Yes, I'm in";
     document.getElementById('rowWhen').style.display = 'flex';
@@ -1841,8 +1727,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     receiptTag.textContent = "Can't make it";
     receiptTag.className = "receipt-tag no";
     document.querySelector('.thankyou-banner').textContent = "Thank you for letting me know — I completely understand. Hopefully we can have lunch another time.";
-    document.getElementById('captureFooterText').textContent = "Saved as a little memory — until our next lunch.";
-    document.getElementById('captureDate').textContent = `Answered ${formatCaptureDate()}`;
 
     document.getElementById('rvRSVP').textContent = "Can't make it";
     document.getElementById('rowWhen').style.display = 'none';
@@ -1885,35 +1769,38 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       : `${base} I completely understand — hope to catch up soon!`;
   }
 
-  // --- cross-device Mail/Gmail reliability helpers -------------------------
-  // mailto: and target="_blank" links can silently fail to do anything on
-  // *any* device — not just iPhone: in-app browsers (Instagram, Messenger,
-  // TikTok, etc.) often block the app-switch entirely, and any device without
-  // a mail app/account configured just does nothing when tapped. The page
-  // otherwise just sits there with no feedback either way. So for every
-  // device we: show an upfront heads-up when we detect the riskiest case
-  // (an in-app browser), and start a short fallback timer after tapping so a
-  // silent failure still gets a helpful nudge instead of just... nothing.
+  // --- iPhone / Mail-app reliability helpers -------------------------------
+  // mailto: links are unreliable on iOS in a few common situations:
+  //  1) inside an in-app browser (Instagram, Messenger, TikTok, etc.) — iOS
+  //     often blocks the app-switch to Mail entirely, silently.
+  //  2) when no Mail account is configured on the phone.
+  // In both cases the page just sits there with no feedback. We detect the
+  // risky case up front (so she gets a heads-up before tapping) and add a
+  // short fallback timer after tapping so a silent failure still gets a
+  // helpful message instead of just... nothing.
   const uaString = navigator.userAgent || "";
   const isIOS = /iPhone|iPad|iPod/i.test(uaString) ||
     (uaString.includes('Macintosh') && navigator.maxTouchPoints > 1); // iPadOS 13+ reports as Mac
   const isLikelyInAppBrowser = /FBAN|FBAV|Instagram|Messenger|Line\/|MicroMessenger|TikTok|Twitter|GSA\//i.test(uaString);
-  // used to word the Messenger paste reminder correctly per device: phones/
-  // tablets paste with a long-press, desktops paste with Ctrl/Cmd+V.
-  const isMobileDevice = isIOS || /Android/i.test(uaString);
-  const pasteInstruction = isMobileDevice ? "long-press the message box and tap Paste" : "press Ctrl+V (Cmd+V on Mac)";
 
   if (isLikelyInAppBrowser){
-    mailtoHint.textContent = "Heads up: this looks like an in-app browser, which sometimes blocks opening Mail or Gmail. If nothing happens when you tap, try \"Send via Messenger\" instead.";
+    mailtoHint.textContent = isIOS
+      ? ""
+      : "";
     mailtoHint.classList.add('show');
   }
 
-  // For Messenger/Gmail/Mail app, she leaves the page to actually hit send — so instead of
-  // popping the thank-you modal on click (before she's sent anything), we queue it and show
-  // it once she comes back to this tab/window, which is a much better signal that she's done.
+  let mailtoFallbackTimer = null;
+  let gmailFallbackTimer = null;
+
+  // For Gmail/Mail app, she leaves the page to actually hit send — so instead of popping
+  // the thank-you modal on click (before she's sent anything), we queue it and show it
+  // once she comes back to this tab/window, which is a much better signal that she's done.
   let pendingThankYou = null;
   function resolvePendingThankYou(){
     if (pendingThankYou){
+      if (mailtoFallbackTimer){ clearTimeout(mailtoFallbackTimer); mailtoFallbackTimer = null; }
+      if (gmailFallbackTimer){ clearTimeout(gmailFallbackTimer); gmailFallbackTimer = null; }
       openThankYouModal(pendingThankYou.message, pendingThankYou.icon);
       pendingThankYou = null;
     }
@@ -1924,172 +1811,130 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   window.addEventListener('focus', resolvePendingThankYou);
   window.addEventListener('pageshow', resolvePendingThankYou); // iOS Safari back/forward cache
 
-  // Messenger, mailto: links, and Gmail's web compose URL all have no way to carry a file —
-  // there's no browser API for a link to pre-attach an image, on any device. So for all three
-  // destinations we show a heads-up reminder FIRST, get the keepsake image ready in the
-  // background, and only act once she taps the button herself.
-  //
-  // The actual hand-off of the image happens INSIDE that button tap (not before it) and tries,
-  // in order:
-  //   1. navigator.share() with the image file — the OS's native share sheet. This is far more
-  //      reliable than the clipboard on Android (works in regular browsers and most in-app
-  //      webviews) and lets her hand the file straight to Messenger/Gmail/etc herself.
-  //   2. Clipboard image copy — attempted right on this fresh tap (not earlier) so the browser
-  //      still treats it as user-initiated; several Android browsers silently refuse a clipboard
-  //      write once too much time has passed since the last real tap.
-  //   3. Showing the image on-screen so she can long-press it and pick "Copy image" / "Download
-  //      image" herself, plus a background download attempt as a bonus.
-  // Whichever of these actually gets her the image, we then open the destination link/app.
-  async function sendWithOutboundNote({ destinationLabel, entryLabel, icon, emoji, continueLabel, openNow, cantAutoText }){
-    // 1) Show the heads-up popup FIRST, before opening anything. She sees the
-    // reminder about attaching her image before she's sent anywhere.
-    setMessengerNoteIcon(icon);
-    hideMessengerNoteImg();
-    messengerNoteOkBtn.disabled = true;
-    messengerNoteOkBtn.textContent = 'Preparing…';
-    setMessengerNoteText(`${cantAutoText} Getting your keepsake image ready…`);
-    openMessengerNote();
+  confirmEmailBtn.addEventListener('click', () => {
+    statusFinal.textContent = "Opening Gmail in a new tab — hit send to confirm.";
+    statusFinal.classList.add('show');
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
 
-    // Make sure the popup has actually painted on screen before we kick off the
-    // (fairly heavy) image render work below.
-    await new Promise(requestAnimationFrame);
-    await new Promise(requestAnimationFrame);
-
-    let blob = null;
-    try {
-      blob = await renderReceiptImageBlob();
-    } catch (err){
-      blob = null;
-    }
-
-    if (blob){
-      setMessengerNoteText(`${cantAutoText} Quick heads up — give your answer a quick look before you send it. Tap the button below and I'll open ${entryLabel} and hand your image off. ${emoji}`);
-    } else {
-      setMessengerNoteText(`Once ${entryLabel} opens, just attach your image and hit send. ${emoji}`);
-    }
-
-    messengerNoteOkBtn.disabled = false;
-    messengerNoteOkBtn.textContent = continueLabel;
-
-    // 2) Only once she taps Continue do we actually act. Opening the destination
-    // is ALWAYS the very first synchronous thing this click handler does — no
-    // awaited work runs before it. That is the one rule that keeps navigation
-    // reliable on every device: the instant a click handler does anything async
-    // first, mobile browsers can silently drop the "this was a real tap" signal
-    // and block window.open()/location.href entirely. So Messenger/Gmail/Mail
-    // opens immediately, no matter what happens with the image.
-    //
-    // The image hand-off runs afterward, in parallel, and never gets to delay
-    // or block that navigation. Because switching to another app takes away
-    // this page's focus, automatic hand-off (share sheet / clipboard) becomes
-    // unreliable at that exact moment on some devices — so alongside trying it,
-    // we always also show the image on-screen right away as a guaranteed
-    // fallback she can long-press to save, instead of hoping the automatic
-    // method worked.
-    messengerNoteOkBtn.onclick = () => {
-      openNow();
-      closeMessengerNote();
-      statusFinal.classList.add('show');
-      pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
-
-      if (!blob){
-        statusFinal.textContent = `Opened ${destinationLabel} — attach your image there and hit send.`;
-        return;
-      }
-
-      statusFinal.textContent = `Opened ${destinationLabel} — here's your keepsake image to attach.`;
-      handOffImage(blob, destinationLabel, entryLabel, emoji);
-    };
-  }
-
-  // Image hand-off, run right after the destination has already opened. Tries a
-  // native share and a clipboard image copy in parallel as automatic best-effort
-  // methods, but — since switching apps can take away this page's focus at any
-  // moment on mobile, making both of those unreliable — it ALSO always shows the
-  // image on-screen immediately (with a background download attempt) as a
-  // guaranteed fallback she can long-press/save herself, rather than waiting to
-  // see if the automatic methods worked.
-  async function handOffImage(blob, destinationLabel, entryLabel, emoji){
-    const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
-
-    if (navigator.canShare && navigator.share){
-      try {
-        const file = new File([blob], filename, { type: 'image/png' });
-        if (navigator.canShare({ files: [file] })){
-          navigator.share({ files: [file] }).catch(() => {});
+    // Same in-app-browser risk as mailto: links — Instagram/TikTok/Messenger etc.
+    // often silently block target="_blank" from opening a new tab on iOS. If the
+    // page is still visible after a moment, nudge her toward the other options
+    // instead of leaving her guessing.
+    if (isLikelyInAppBrowser){
+      if (gmailFallbackTimer) clearTimeout(gmailFallbackTimer);
+      gmailFallbackTimer = setTimeout(() => {
+        if (pendingThankYou && document.visibilityState === 'visible'){
+          statusFinal.textContent = "Didn't open Gmail? Try \"Use my Mail app instead\" above, or \"Copy my answer\" below instead.";
+          statusFinal.classList.add('show');
         }
-      } catch (err){ /* ignore — fall through to the on-screen fallback below */ }
+        gmailFallbackTimer = null;
+      }, 1200);
     }
-    if (navigator.clipboard && window.ClipboardItem){
-      try {
-        navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]).catch(() => {});
-      } catch (err){ /* ignore — fall through to the on-screen fallback below */ }
+  });
+
+  confirmMailtoBtn.addEventListener('click', () => {
+    statusFinal.textContent = "Opening your Mail app — hit send to confirm.";
+    statusFinal.classList.add('show');
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+
+    // iPhone fallback: if the page is still visible after ~1.2s, the Mail app
+    // most likely never opened (blocked in-app browser, no Mail account, etc.)
+    // — so let her know and point her at a working option instead of leaving
+    // her guessing.
+    if (isIOS){
+      if (mailtoFallbackTimer) clearTimeout(mailtoFallbackTimer);
+      mailtoFallbackTimer = setTimeout(() => {
+        if (pendingThankYou && document.visibilityState === 'visible'){
+          statusFinal.textContent = "Didn't open your Mail app? Try \"Send via Gmail\" above, or \"Copy my answer\" below instead.";
+          statusFinal.classList.add('show');
+        }
+        mailtoFallbackTimer = null;
+      }, 1200);
     }
+  });
 
-    // Guaranteed fallback: show the image right here so she can long-press it
-    // (works regardless of whether the share/clipboard attempts above succeed),
-    // and try an automatic download in the background too as a bonus.
-    setMessengerNoteIcon("💾");
-    setMessengerNoteText(`Your reply's already sent — this is your keepsake image. <strong>Long-press it below</strong> and tap <strong>Copy image</strong> (or Download image), then attach it in ${entryLabel} if it didn't come through automatically. ${emoji}`);
-    showMessengerNoteImg(blob);
-    messengerNoteOkBtn.textContent = 'Got it';
-    messengerNoteOkBtn.disabled = false;
-    messengerNoteOkBtn.onclick = () => closeMessengerNote();
-    openMessengerNote();
+  // Tapping "Send via Messenger" no longer jumps straight to Messenger — it
+  // first shows a heads-up modal reminding her to paste the message, since
+  // Messenger links can't carry pre-filled text. The actual copy + hand-off
+  // only happens once she taps "Continue to Messenger" in that modal.
+  let pendingReceiptBlob = null;
 
+  // Renders the "Here's My Answer" receipt (buttons excluded) into a PNG,
+  // so both the "Yes, I'm in!" and "Can't make it" answers can be sent as
+  // an actual photo over Messenger instead of just plain text.
+  async function captureReceiptImage(){
+    if (typeof html2canvas === 'undefined') return null;
+    const node = document.getElementById('shareableReceipt');
     try {
-      const downloadUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = filename;
-      link.href = downloadUrl;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
+      const canvas = await html2canvas(node, { backgroundColor: '#fffdf8', scale: 2 });
+      return await new Promise(resolve => canvas.toBlob(blob => resolve(blob), 'image/png'));
     } catch (err){
-      // ignore — the on-screen image is the reliable fallback regardless
+      return null;
     }
   }
 
-  confirmMessengerBtn.addEventListener('click', (e) => {
+  confirmMessengerBtn.addEventListener('click', async (e) => {
     e.preventDefault();
-    sendWithOutboundNote({
-      destinationLabel: "Messenger",
-      entryLabel: "the chat",
-      icon: "💬",
-      emoji: "💕",
-      continueLabel: "Continue to Messenger 💬",
-      openNow: () => window.open(confirmMessengerBtn.href, '_blank', 'noopener'),
-      cantAutoText: "Messenger can't auto-fill a message, so I'll get your image ready to hand off."
-    });
+    statusFinal.textContent = "Preparing your answer photo…";
+    statusFinal.classList.add('show');
+
+    const blob = await captureReceiptImage();
+    const canWebShareFiles = blob && navigator.canShare &&
+      navigator.canShare({ files: [new File([blob], 'lunch-rsvp.png', { type: 'image/png' })] });
+
+    if (canWebShareFiles){
+      // Best path: hand the photo straight to the OS share sheet, where
+      // Messenger can be picked directly — no copy/paste needed.
+      const file = new File([blob], 'lunch-rsvp.png', { type: 'image/png' });
+      try {
+        await navigator.share({ files: [file], title: 'Lunch RSVP', text: lastSubject });
+        statusFinal.textContent = "Shared! If you picked Messenger, your photo is on its way.";
+        pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+        resolvePendingThankYou();
+        return;
+      } catch (err) {
+        if (err && err.name === 'AbortError'){
+          statusFinal.textContent = "";
+          statusFinal.classList.remove('show');
+          return;
+        }
+        // fall through to the manual flow below
+      }
+    }
+
+    // Fallback (e.g. desktop browsers without file sharing): download the
+    // photo and hand off to Messenger with the text copied to clipboard.
+    pendingReceiptBlob = blob;
+    statusFinal.classList.remove('show');
+    openMessengerNote();
   });
 
-  confirmEmailBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const gmailUrl = confirmEmailBtn.href;
-    sendWithOutboundNote({
-      destinationLabel: "Gmail",
-      entryLabel: "the email",
-      icon: "💌",
-      emoji: "💌",
-      continueLabel: "Continue to Gmail 💌",
-      openNow: () => window.open(gmailUrl, '_blank', 'noopener'),
-      cantAutoText: "Gmail can't auto-attach a file, so I'll get your image ready to hand off."
-    });
-  });
+  document.getElementById('messengerContinueBtn').addEventListener('click', async () => {
+    const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
+    try {
+      await navigator.clipboard.writeText(fullText);
+      statusFinal.textContent = "Copied your answer! ";
+    } catch (err) {
+      statusFinal.textContent = "Opening Messenger — copy your answer above and paste it in the chat. ";
+    }
 
-  confirmMailtoBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const mailtoUrl = confirmMailtoBtn.href;
-    sendWithOutboundNote({
-      destinationLabel: "your Mail app",
-      entryLabel: "your Mail app",
-      icon: "💌",
-      emoji: "💌",
-      continueLabel: "Continue to Mail App 💌",
-      openNow: () => { window.location.href = mailtoUrl; },
-      cantAutoText: "Your Mail app can't auto-attach a file, so I'll get your image ready to hand off."
-    });
+    if (pendingReceiptBlob){
+      const url = URL.createObjectURL(pendingReceiptBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'lunch-rsvp.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      statusFinal.textContent += "Your answer photo downloaded — attach it in the chat along with your pasted answer.";
+    } else {
+      statusFinal.textContent += "Opening Messenger — just paste and send.";
+    }
+    statusFinal.classList.add('show');
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+    closeMessengerNote();
+    window.open(confirmMessengerBtn.href, '_blank', 'noopener');
   });
 
   // step 1 -> yes goes to the time step; no goes straight to the no-path
@@ -2106,13 +1951,16 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     const date = document.getElementById('pickDate').value;
     const time = document.getElementById('pickTime').value;
     document.getElementById('chosenWhen').textContent = formatWhen(date, time);
-    updateLocationExtras();
-    fetchWeatherForDate(date);
     showStep(stepYesLocation);
+    updateMapAndWeather(document.getElementById('suggestLocation').value.trim() || EVENT_WHERE, date);
   });
 
-  // if she suggests a different spot, refresh the map to point there instead
-  document.getElementById('suggestLocation').addEventListener('blur', updateLocationExtras);
+  // refresh the map + forecast if she suggests a different spot
+  document.getElementById('suggestLocation').addEventListener('change', () => {
+    const date = document.getElementById('pickDate').value;
+    const spot = document.getElementById('suggestLocation').value.trim() || EVENT_WHERE;
+    updateMapAndWeather(spot, date);
+  });
 
   // location step / no step -> final summary screen
   document.getElementById('showAnswerYesBtn').addEventListener('click', () => {
