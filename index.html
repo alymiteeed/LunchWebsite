@@ -1483,7 +1483,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
         </div>
 
         <div class="send-divider">or send by email</div>
-        <div class="email-device-hint">On a laptop or desktop, use Gmail. On your phone, use your Mail app instead. Either way it opens addressed and ready — your image is copied too, just paste it in before you send.</div>
+        <div class="email-device-hint">On a laptop or desktop, use Gmail. On your phone, use your Mail app instead. Either way, we'll remind you to download or copy your image first — it opens addressed and ready, just attach it before you send.</div>
         <div class="rsvp-row">
           <a class="rsvp-btn yes" id="confirmEmailBtn" href="#" target="_blank" rel="noopener">Send via Gmail</a>
         </div>
@@ -1508,16 +1508,17 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     </div>
   </div>
 
-  <!-- MESSENGER REMINDER POPUP: appears the moment "Send via Messenger" is
-       tapped and shows the paste instructions BEFORE Messenger opens — she
-       reads it, then taps "Continue to Messenger" herself to proceed. -->
+  <!-- OUTBOUND REMINDER POPUP: appears the moment "Send via Messenger" / "Send via
+       Gmail" / "Use my Mail app instead" is tapped and shows a heads-up BEFORE that
+       destination opens — she reads it, then taps "Continue to …" herself to proceed. -->
   <div class="modal-overlay" id="messengerNoteOverlay">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close" id="messengerNoteCloseBtn" aria-label="Close">✕</button>
-      <span class="thankyou-modal-icon">✓</span>
-      <div class="thankyou-modal-title">Quick Reminder!</div>
+      <span class="thankyou-modal-icon" id="messengerNoteIcon">💬</span>
+      <div class="thankyou-modal-title">Quick Heads Up!</div>
       <p class="thankyou-modal-text" id="messengerNoteText">Copying your keepsake image…</p>
       <button class="thankyou-modal-done" id="messengerNoteOkBtn" disabled>Preparing…</button>
+      <button class="back-link" id="messengerNoteNeverMindBtn" style="margin-top:12px;">← never mind</button>
     </div>
   </div>
 
@@ -1631,8 +1632,10 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   const messengerNoteOkBtn = document.getElementById('messengerNoteOkBtn');
   function openMessengerNote(){ messengerNoteOverlay.classList.add('show'); }
   function closeMessengerNote(){ messengerNoteOverlay.classList.remove('show'); }
-  function setMessengerNoteText(text){ document.getElementById('messengerNoteText').textContent = text; }
+  function setMessengerNoteText(html){ document.getElementById('messengerNoteText').innerHTML = html; }
+  function setMessengerNoteIcon(icon){ document.getElementById('messengerNoteIcon').textContent = icon; }
   document.getElementById('messengerNoteCloseBtn').addEventListener('click', closeMessengerNote);
+  document.getElementById('messengerNoteNeverMindBtn').addEventListener('click', closeMessengerNote);
   messengerNoteOverlay.addEventListener('click', closeMessengerNote); // click outside the card cancels, without opening Messenger
 
   document.addEventListener('keydown', (e) => {
@@ -2063,17 +2066,12 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     mailtoHint.classList.add('show');
   }
 
-  let mailtoFallbackTimer = null;
-  let gmailFallbackTimer = null;
-
-  // For Gmail/Mail app, she leaves the page to actually hit send — so instead of popping
-  // the thank-you modal on click (before she's sent anything), we queue it and show it
-  // once she comes back to this tab/window, which is a much better signal that she's done.
+  // For Messenger/Gmail/Mail app, she leaves the page to actually hit send — so instead of
+  // popping the thank-you modal on click (before she's sent anything), we queue it and show
+  // it once she comes back to this tab/window, which is a much better signal that she's done.
   let pendingThankYou = null;
   function resolvePendingThankYou(){
     if (pendingThankYou){
-      if (mailtoFallbackTimer){ clearTimeout(mailtoFallbackTimer); mailtoFallbackTimer = null; }
-      if (gmailFallbackTimer){ clearTimeout(gmailFallbackTimer); gmailFallbackTimer = null; }
       openThankYouModal(pendingThankYou.message, pendingThankYou.icon);
       pendingThankYou = null;
     }
@@ -2084,123 +2082,25 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   window.addEventListener('focus', resolvePendingThankYou);
   window.addEventListener('pageshow', resolvePendingThankYou); // iOS Safari back/forward cache
 
-  // mailto: links and Gmail's web compose URL have no way to carry a file —
-  // there's no browser API for a link to pre-attach an image, on any device.
-  // IMPORTANT: opening Gmail/Mail must happen synchronously, in direct
-  // response to the click, with nothing awaited first — desktop browsers
-  // (Safari especially, but others too) silently block a tab/navigation that
-  // fires after any delay, since it no longer looks user-initiated. That's
-  // why the open now happens FIRST, immediately, and the image is copied to
-  // the clipboard afterward as a best-effort background step, falling back
-  // to an automatic download (which needs no focus/timing) if that fails.
-
-  function armGmailFallback(){
-    if (gmailFallbackTimer) clearTimeout(gmailFallbackTimer);
-    gmailFallbackTimer = setTimeout(() => {
-      if (pendingThankYou && document.visibilityState === 'visible'){
-        statusFinal.textContent = "Didn't open Gmail? Try \"Use my Mail app instead\" above, or \"Send via Messenger\" / \"Save as Image\" below instead.";
-        statusFinal.classList.add('show');
-      }
-      gmailFallbackTimer = null;
-    }, 1200);
-  }
-
-  function armMailtoFallback(){
-    if (mailtoFallbackTimer) clearTimeout(mailtoFallbackTimer);
-    mailtoFallbackTimer = setTimeout(() => {
-      if (pendingThankYou && document.visibilityState === 'visible'){
-        statusFinal.textContent = "Didn't open your Mail app? Try \"Send via Gmail\" above, or \"Send via Messenger\" / \"Save as Image\" below instead.";
-        statusFinal.classList.add('show');
-      }
-      mailtoFallbackTimer = null;
-    }, 1200);
-  }
-
-  // shared by both email buttons: open Gmail/Mail immediately (synchronous,
-  // so no browser ever blocks it), then copy the image in the background.
-  async function sendWithImage({ button, openNow, armFallback, pasteLabel, downloadLabel }){
-    // Open FIRST, before anything async — this is what makes it "direct" on every device.
-    openNow();
-    armFallback();
-    statusFinal.textContent = pasteLabel;
-    statusFinal.classList.add('show');
-    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
-
-    const originalLabel = button.textContent;
-    button.textContent = 'Copying image…';
-
-    let blob = null;
-    try {
-      blob = await renderReceiptImageBlob();
-    } catch (err){
-      blob = null;
-    }
-
-    button.textContent = originalLabel;
-
-    if (blob){
-      const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
-
-      // Copy the image to the clipboard so she can just paste it in. This can
-      // fail if focus already moved to the newly-opened tab — that's fine,
-      // we fall back to an automatic download instead, no focus required.
-      if (navigator.clipboard && window.ClipboardItem){
-        try {
-          await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
-          return; // pasteLabel already shown above
-        } catch (err){
-          // fall through to the download fallback below
-        }
-      }
-
-      const downloadUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = filename;
-      link.href = downloadUrl;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
-      statusFinal.textContent = downloadLabel;
-      statusFinal.classList.add('show');
-    }
-  }
-
-  confirmEmailBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const gmailUrl = confirmEmailBtn.href;
-    sendWithImage({
-      button: confirmEmailBtn,
-      openNow: () => window.open(gmailUrl, '_blank', 'noopener'),
-      armFallback: armGmailFallback,
-      pasteLabel: "Opening Gmail with your answer already filled in — your image is copying, just paste it (Ctrl/Cmd+V) into the message, then hit send.",
-      downloadLabel: "Saved your image — attach it from your downloads before you send."
-    });
-  });
-
-  confirmMailtoBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const mailtoUrl = confirmMailtoBtn.href;
-    sendWithImage({
-      button: confirmMailtoBtn,
-      openNow: () => { window.location.href = mailtoUrl; },
-      armFallback: armMailtoFallback,
-      pasteLabel: "Opening your Mail app with your answer already filled in — your image is copying, just paste it into the message, then hit send.",
-      downloadLabel: "Saved your image — attach it from your files before you send."
-    });
-  });
-
-  // Tapping "Send via Messenger" shows the reminder pop-up FIRST, with the
-  // paste instructions, so she reads them before anything happens. Messenger
-  // only opens once she taps "Continue to Messenger" herself — and because
-  // that's a fresh click (a real user gesture), it still opens reliably on
-  // every device/browser, popup blockers included, even though the image
-  // was prepared in the background while she was reading.
-  async function sendImageToMessenger(){
+  // Messenger, mailto: links, and Gmail's web compose URL all have no way to carry a file —
+  // there's no browser API for a link to pre-attach an image, on any device. So for all three
+  // destinations we show a heads-up reminder FIRST — telling her to copy or download the
+  // keepsake image so she can attach it once she's there — and only open the destination once
+  // she taps "Continue" herself. That tap is a fresh user gesture, so the tab/app still opens
+  // reliably on every device/browser, popup blockers included, even though the image was
+  // prepared in the background while she was reading the reminder.
+  async function sendWithOutboundNote({ destinationLabel, entryLabel, icon, emoji, continueLabel, openNow, cantAutoText }){
+    setMessengerNoteIcon(icon);
     messengerNoteOkBtn.disabled = true;
     messengerNoteOkBtn.textContent = 'Preparing…';
-    setMessengerNoteText(`Remember: once you're in Messenger, ${pasteInstruction} to add your image before you hit send. Getting it copied now…`);
+    setMessengerNoteText(`${cantAutoText} so I'll copy your image to your clipboard first. Give me a sec…`);
     openMessengerNote();
+
+    // Make sure the popup has actually painted on screen before we kick off the
+    // (fairly heavy) image render/copy work below — otherwise the heads-up and
+    // the download/copy can feel like they happen at the same instant.
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
 
     let blob = null;
     try {
@@ -2212,7 +2112,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     let copied = false;
     if (blob){
       // Copy just the image (no text) to the clipboard so she can paste it
-      // straight into the Messenger chat once she gets there.
+      // straight into the message once she gets there.
       if (navigator.clipboard && window.ClipboardItem){
         try {
           await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
@@ -2224,7 +2124,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
 
       if (!copied){
         // Fallback: download the image so she can attach it from her
-        // gallery/downloads once she's in the Messenger chat.
+        // gallery/downloads once she's in the message.
         const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
         const downloadUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -2238,21 +2138,21 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     }
 
     if (copied){
-      setMessengerNoteText(`✓ Image copied! In Messenger, ${pasteInstruction} to add it, then hit send.`);
+      setMessengerNoteText(`${cantAutoText} so I've copied your image to your clipboard. Once ${entryLabel} opens, just <strong>paste it in and hit send.</strong> ${emoji}`);
     } else if (blob){
-      setMessengerNoteText("Saved your image to your downloads — attach it in Messenger, then hit send.");
+      setMessengerNoteText(`I've saved your image to your downloads instead — once ${entryLabel} opens, just <strong>attach it and hit send.</strong> ${emoji}`);
     } else {
-      setMessengerNoteText("Ready — open Messenger and type your reply in once you're there.");
+      setMessengerNoteText(`Once ${entryLabel} opens, just <strong>attach your image and hit send.</strong> ${emoji}`);
     }
 
     messengerNoteOkBtn.disabled = false;
-    messengerNoteOkBtn.textContent = 'Continue to Messenger';
+    messengerNoteOkBtn.textContent = continueLabel;
     messengerNoteOkBtn.onclick = () => {
       closeMessengerNote();
-      window.open(confirmMessengerBtn.href, '_blank', 'noopener');
+      openNow();
       statusFinal.textContent = copied
-        ? "Opened Messenger — paste your image in and send."
-        : (blob ? "Opened Messenger — attach your saved image and send." : "Opened Messenger…");
+        ? `Opened ${destinationLabel} — paste your image in and send.`
+        : (blob ? `Opened ${destinationLabel} — attach your saved image and send.` : `Opened ${destinationLabel}…`);
       statusFinal.classList.add('show');
       pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
     };
@@ -2260,7 +2160,43 @@ Would you be free to join me? Let me know if you’re in — your schedule works
 
   confirmMessengerBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    sendImageToMessenger();
+    sendWithOutboundNote({
+      destinationLabel: "Messenger",
+      entryLabel: "the chat",
+      icon: "💬",
+      emoji: "💕",
+      continueLabel: "Continue to Messenger 💬",
+      openNow: () => window.open(confirmMessengerBtn.href, '_blank', 'noopener'),
+      cantAutoText: "Messenger can't auto-fill a message,"
+    });
+  });
+
+  confirmEmailBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const gmailUrl = confirmEmailBtn.href;
+    sendWithOutboundNote({
+      destinationLabel: "Gmail",
+      entryLabel: "the email",
+      icon: "💌",
+      emoji: "💌",
+      continueLabel: "Continue to Gmail 💌",
+      openNow: () => window.open(gmailUrl, '_blank', 'noopener'),
+      cantAutoText: "Gmail can't auto-attach a file,"
+    });
+  });
+
+  confirmMailtoBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const mailtoUrl = confirmMailtoBtn.href;
+    sendWithOutboundNote({
+      destinationLabel: "your Mail app",
+      entryLabel: "your Mail app",
+      icon: "💌",
+      emoji: "💌",
+      continueLabel: "Continue to Mail App 💌",
+      openNow: () => { window.location.href = mailtoUrl; },
+      cantAutoText: "Your Mail app can't auto-attach a file,"
+    });
   });
 
   // step 1 -> yes goes to the time step; no goes straight to the no-path
