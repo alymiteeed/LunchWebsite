@@ -1971,48 +1971,65 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     messengerNoteOkBtn.disabled = false;
     messengerNoteOkBtn.textContent = continueLabel;
 
-    // 2) Only once she taps Continue do we actually leave the page. openNow() is
-    // called synchronously, as the very first thing in this click handler, before
-    // any awaited work — that's what keeps it reliable on every device: the
-    // moment a click handler does anything async before calling window.open() /
-    // location.href, many mobile browsers (especially iOS Safari and in-app
-    // browsers) stop treating it as something she actually tapped and silently
-    // block the navigation. So the destination opens right on this tap, and the
-    // image hand-off (share sheet / clipboard) happens afterward, best-effort,
-    // without delaying or blocking it.
-    messengerNoteOkBtn.onclick = () => {
+    // 2) Only once she taps Continue do we actually act. We try the native share
+    // sheet FIRST, while this tap's focus/activation is freshest — Messenger/
+    // Gmail/Mail switching away afterward can cause the page to lose focus,
+    // and both the Clipboard API and (on some browsers) the Share API silently
+    // fail once that happens. So hand-off is attempted before navigation, not
+    // after, and the destination still opens right in this same click either way.
+    messengerNoteOkBtn.onclick = async () => {
+      messengerNoteOkBtn.disabled = true;
+      messengerNoteOkBtn.textContent = 'One sec…';
+      const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
+      let shared = false;
+
+      if (blob && navigator.canShare && navigator.share){
+        try {
+          const file = new File([blob], filename, { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })){
+            await navigator.share({ files: [file] });
+            shared = true;
+          }
+        } catch (err){
+          if (err && err.name === 'AbortError'){
+            // she backed out of the share sheet on purpose — let her try again
+            messengerNoteOkBtn.disabled = false;
+            messengerNoteOkBtn.textContent = continueLabel;
+            return;
+          }
+          // otherwise fall through to open + clipboard fallback below
+        }
+      }
+
       openNow();
       closeMessengerNote();
-      statusFinal.textContent = blob
-        ? `Opened ${destinationLabel} — getting your keepsake image ready to attach…`
-        : `Opened ${destinationLabel} — attach your image there and hit send.`;
       statusFinal.classList.add('show');
       pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
 
-      if (!blob) return;
+      if (shared){
+        statusFinal.textContent = `Shared your image! If you picked ${destinationLabel}, it should already be there — just paste/attach your answer and send.`;
+        messengerNoteOkBtn.disabled = false;
+        return;
+      }
 
+      if (!blob){
+        statusFinal.textContent = `Opened ${destinationLabel} — attach your image there and hit send.`;
+        messengerNoteOkBtn.disabled = false;
+        return;
+      }
+
+      statusFinal.textContent = `Opened ${destinationLabel} — getting your keepsake image ready to attach…`;
       handOffImage(blob, destinationLabel, entryLabel, emoji);
+      messengerNoteOkBtn.disabled = false;
     };
   }
 
-  // Best-effort image hand-off, run AFTER the destination has already opened, so it
-  // never delays or blocks getting her to Messenger/Gmail/Mail. Tries, in order:
-  // native share sheet, clipboard image copy, then falls back to showing the image
-  // on-screen (with a background download attempt) so she can long-press/save it.
+  // Secondary best-effort image hand-off, used only when native share wasn't
+  // available. Tries a clipboard image copy first, then falls back to showing
+  // the image on-screen (with a background download attempt) so she can
+  // long-press/save it herself.
   async function handOffImage(blob, destinationLabel, entryLabel, emoji){
     const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
-
-    if (navigator.canShare && navigator.share){
-      try {
-        const file = new File([blob], filename, { type: 'image/png' });
-        if (navigator.canShare({ files: [file] })){
-          await navigator.share({ files: [file] });
-          return;
-        }
-      } catch (err){
-        // fall through to the clipboard/on-screen fallbacks below
-      }
-    }
 
     let copied = false;
     if (navigator.clipboard && window.ClipboardItem){
