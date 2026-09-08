@@ -1517,12 +1517,10 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   const EVENT_LAT = 14.6564;
   const EVENT_LON = 121.0298;
   const EVENT_MAP_QUERY = "SM North EDSA, Quezon City";
-  // Your Facebook Messenger username (the part after m.me/ in your personal
-  // Messenger link, e.g. "https://m.me/john.doe.123" -> "john.doe.123").
-  // Messenger links can't pre-fill the message text, so tapping the button
-  // below copies her answer to the clipboard first, then opens a chat with
-  // you so she just has to paste and send.
-  const MESSENGER_USERNAME = "alymaranan.03"; // <-- put YOUR m.me username here
+  // Your Facebook profile link. Messenger links can't pre-fill the message
+  // text, so tapping the button below gets her image ready to hand off first,
+  // then opens your Facebook profile so she can message you directly.
+  const MESSENGER_PROFILE_URL = "https://www.facebook.com/alymaranan.03/"; // <-- put YOUR Facebook profile link here
   // ----------------------------------------
 
   document.getElementById('dWhere').textContent = EVENT_WHERE;
@@ -1780,7 +1778,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   const confirmEmailBtn = document.getElementById('confirmEmailBtn');   // Gmail web link
   const confirmMailtoBtn = document.getElementById('confirmMailtoBtn'); // mailto: fallback
   const confirmMessengerBtn = document.getElementById('confirmMessengerBtn'); // Messenger link
-  const messengerUrl = `https://m.me/${MESSENGER_USERNAME}`;
+  const messengerUrl = MESSENGER_PROFILE_URL;
 
   let lastAnswer = null; // "yes" or "no"
   let lastSubject = "";
