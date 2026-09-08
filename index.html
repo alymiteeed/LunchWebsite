@@ -366,6 +366,29 @@
   .receipt-line .rl-label{ text-transform: uppercase; font-size: 10.5px; font-weight: 600; letter-spacing: 1.2px; color: #9c8a72; padding-top: 2px; white-space:nowrap; }
   .receipt-line .rl-value{ text-align: right; line-height: 1.5; font-weight: 500; }
 
+  /* #shareableReceipt is captured on its own (via html2canvas) and sent as a
+     photo over Messenger, separate from the modal chrome around it. Without
+     its own framing it would screenshot as bare text flush to the image
+     edges, so it gets its own background, padding, and corner accents here
+     so the exported PNG reads as a finished card rather than a crop. */
+  #shareableReceipt{
+    position: relative;
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-top: 3px solid var(--mustard);
+    border-radius: 6px;
+    padding: 28px 24px 24px;
+  }
+  #shareableReceipt::before, #shareableReceipt::after{
+    content:"";
+    position:absolute;
+    width: 20px;
+    height: 20px;
+    pointer-events:none;
+  }
+  #shareableReceipt::before{ top: 10px; left: 10px; border-top: 1px solid var(--mustard); border-left: 1px solid var(--mustard); }
+  #shareableReceipt::after{ bottom: 10px; right: 10px; border-bottom: 1px solid var(--mustard); border-right: 1px solid var(--mustard); }
+
   /* photo memories strip */
   .photo-strip{
     width: 100%;
@@ -523,6 +546,14 @@
     margin: auto;
     animation: popIn .2s ease;
   }
+  /* #stepFinal now wraps a self-framed #shareableReceipt (border, corner
+     accents, mustard top rule) — so the outer modal-card's own top rule and
+     corner brackets are turned off here to avoid a "card inside a card"
+     double-frame right on top of it. The plain hairline border + shadow stay,
+     just to lift the modal off the dark overlay behind it. */
+  #stepFinal{ border-top: 1px solid var(--hairline); }
+  #stepFinal::before, #stepFinal::after{ display: none; }
+
   .modal-close{
     position: absolute;
     top: 14px;
@@ -538,6 +569,39 @@
     cursor: pointer;
     line-height: 1;
   }
+
+  /* image preview inside the messenger heads-up modal, so she can see the
+     actual photo before it's copied and Messenger opens */
+  .receipt-preview{
+    position: relative;
+    margin: 14px 0 16px;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f7f2e8;
+    min-height: 130px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .receipt-preview-loading{
+    font-size: 12.5px;
+    color: #9c8a72;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    padding: 36px 10px;
+    text-align:center;
+  }
+  .receipt-preview img{
+    display:none;
+    width: 100%;
+    height: auto;
+    max-height: 46vh;
+    object-fit: contain;
+    vertical-align: bottom;
+  }
+  .receipt-preview.ready .receipt-preview-loading{ display:none; }
+  .receipt-preview.ready img{ display:block; }
 
   /* thank-you modal */
   .thankyou-modal-icon{
@@ -1388,8 +1452,12 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close" id="messengerNoteCloseBtn" aria-label="Close">✕</button>
       <span class="thankyou-modal-icon">✓</span>
-      <div class="thankyou-modal-title">Quick Heads Up!</div>
-      <p class="thankyou-modal-text">Messenger can't auto-fill a photo, so I'll copy the image of your answer to your clipboard first. Once the chat opens, just <b>paste it in and hit send</b>.</p>
+      <div class="thankyou-modal-title" id="messengerNoteTitle">Here's Your Photo</div>
+      <div class="receipt-preview" id="receiptPreview">
+        <div class="receipt-preview-loading" id="receiptPreviewLoading">Preparing your photo…</div>
+        <img id="receiptPreviewImg" alt="Preview of your answer card">
+      </div>
+      <p class="thankyou-modal-text" id="messengerNoteText">Take a look — this is the photo that's about to be copied. Messenger can't auto-fill it, so once the chat opens just <b>paste it in and hit send</b>.</p>
       <a class="thankyou-modal-done" id="messengerContinueBtn" href="#" target="_blank" rel="noopener">Continue to Messenger</a>
       <button class="back-link" id="messengerCancelBtn" style="margin-top:12px;">← never mind</button>
     </div>
@@ -1584,8 +1652,14 @@ Would you be free to join me? Let me know if you’re in — your schedule works
 
   // messenger heads-up modal controls — shown before handing off to the Messenger link
   const messengerNoteOverlay = document.getElementById('messengerNoteOverlay');
+  const receiptPreview = document.getElementById('receiptPreview');
+  const receiptPreviewImg = document.getElementById('receiptPreviewImg');
+  let receiptPreviewUrl = null; // object URL currently shown, revoked before each new one
   function openMessengerNote(){ messengerNoteOverlay.classList.add('show'); }
-  function closeMessengerNote(){ messengerNoteOverlay.classList.remove('show'); }
+  function closeMessengerNote(){
+    messengerNoteOverlay.classList.remove('show');
+    receiptPreview.classList.remove('ready'); // back to "preparing" for next time it opens
+  }
   document.getElementById('messengerNoteCloseBtn').addEventListener('click', closeMessengerNote);
   document.getElementById('messengerCancelBtn').addEventListener('click', closeMessengerNote);
   messengerNoteOverlay.addEventListener('click', closeMessengerNote); // click outside the card closes it
@@ -1787,7 +1861,18 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   const uaString = navigator.userAgent || "";
   const isIOS = /iPhone|iPad|iPod/i.test(uaString) ||
     (uaString.includes('Macintosh') && navigator.maxTouchPoints > 1); // iPadOS 13+ reports as Mac
+  // Image clipboard writes are unreliable across Android browsers/in-app
+  // WebViews — the photo often silently fails to actually land on the
+  // clipboard — so Android gets a text-only copy instead, which always
+  // pastes cleanly and still tells the other person the answer.
+  const isAndroid = /Android/i.test(uaString);
   const isLikelyInAppBrowser = /FBAN|FBAV|Instagram|Messenger|Line\/|MicroMessenger|TikTok|Twitter|GSA\//i.test(uaString);
+
+  if (isAndroid){
+    document.getElementById('messengerNoteTitle').textContent = 'Preview Your Answer';
+    document.getElementById('messengerNoteText').innerHTML =
+      'Here\'s a preview of your answer. Messenger can\'t auto-fill it, so I\'ll copy your answer as <b>text</b> — once the chat opens just paste it in and hit send.';
+  }
 
   if (isLikelyInAppBrowser){
     mailtoHint.textContent = isIOS
@@ -1879,11 +1964,33 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     }
   }
 
+  let captureGen = 0; // guards against a stale capture landing after a newer one was started
   confirmMessengerBtn.addEventListener('click', (e) => {
     e.preventDefault();
+    const gen = ++captureGen;
+    receiptPreview.classList.remove('ready'); // show "preparing…" until this capture resolves
     receiptImagePromise = captureReceiptImage(); // kicked off now, awaited on "Continue"
+    receiptImagePromise.then(blob => {
+      if (gen !== captureGen || !blob) return; // superseded, or capture failed — leave the loading text up
+      if (receiptPreviewUrl) URL.revokeObjectURL(receiptPreviewUrl);
+      receiptPreviewUrl = URL.createObjectURL(blob);
+      receiptPreviewImg.src = receiptPreviewUrl;
+      receiptPreview.classList.add('ready');
+    });
     openMessengerNote();
   });
+
+  // Copies just the text answer to the clipboard (used as the primary path
+  // on Android, and as the last-resort fallback everywhere else).
+  async function copyTextAnswer(){
+    const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
+    try {
+      await navigator.clipboard.writeText(fullText);
+      statusFinal.textContent = "Copied your answer! Paste it into Messenger and hit send.";
+    } catch (err) {
+      statusFinal.textContent = "Copy your answer above and paste it into Messenger.";
+    }
+  }
 
   document.getElementById('messengerContinueBtn').addEventListener('click', async () => {
     // messengerContinueBtn is a real <a href="..."> with its href already set
@@ -1893,41 +2000,42 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     // trusted click and hand off straight to the Messenger app, rather than
     // just opening the m.me web page. Everything below (screenshot + clipboard)
     // runs alongside that navigation, not before it.
-    statusFinal.textContent = "Copying your answer photo…";
+    statusFinal.textContent = isAndroid ? "Copying your answer…" : "Copying your answer photo…";
     statusFinal.classList.add('show');
 
-    const blob = receiptImagePromise ? await receiptImagePromise : await captureReceiptImage();
-    let copiedImage = false;
-
-    if (blob && navigator.clipboard && window.ClipboardItem){
-      try {
-        await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
-        copiedImage = true;
-      } catch (err) { /* clipboard image write unsupported or blocked — fall back below */ }
-    }
-
-    if (copiedImage){
-      statusFinal.textContent = "Copied your answer photo! Paste it into Messenger and hit send.";
-    } else if (blob){
-      // Fallback for browsers that can't copy images to the clipboard:
-      // download the photo instead so it can be attached manually.
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'lunch-rsvp.png';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-      statusFinal.textContent = "Your answer photo downloaded — attach it in the chat and send.";
+    if (isAndroid){
+      // Skip the image clipboard attempt entirely on Android — it tends to
+      // report success but not actually copy, leaving her pasting nothing.
+      // Text always works and still gets the answer across.
+      await copyTextAnswer();
     } else {
-      // Last resort: at least get the text answer onto the clipboard.
-      const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
-      try {
-        await navigator.clipboard.writeText(fullText);
-        statusFinal.textContent = "Copied your answer! Paste it into Messenger and hit send.";
-      } catch (err) {
-        statusFinal.textContent = "Copy your answer above and paste it into Messenger.";
+      const blob = receiptImagePromise ? await receiptImagePromise : await captureReceiptImage();
+      let copiedImage = false;
+
+      if (blob && navigator.clipboard && window.ClipboardItem){
+        try {
+          await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
+          copiedImage = true;
+        } catch (err) { /* clipboard image write unsupported or blocked — fall back below */ }
+      }
+
+      if (copiedImage){
+        statusFinal.textContent = "Copied your answer photo! Paste it into Messenger and hit send.";
+      } else if (blob){
+        // Fallback for browsers that can't copy images to the clipboard:
+        // download the photo instead so it can be attached manually.
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'lunch-rsvp.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        statusFinal.textContent = "Your answer photo downloaded — attach it in the chat and send.";
+      } else {
+        // Last resort: at least get the text answer onto the clipboard.
+        await copyTextAnswer();
       }
     }
 
