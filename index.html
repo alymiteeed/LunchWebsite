@@ -134,24 +134,36 @@
     box-sizing: border-box;
   }
   .card::before, .card::after,
-  .modal-card::before, .modal-card::after{
+  .modal-card::before, .modal-card::after,
+  .receipt-capture::before, .receipt-capture::after{
     content:"";
     position:absolute;
     width: 22px;
     height: 22px;
     pointer-events:none;
   }
-  .card::before, .modal-card::before{
+  .card::before, .modal-card::before, .receipt-capture::before{
     top: 10px; left: 10px;
     border-top: 1px solid var(--mustard);
     border-left: 1px solid var(--mustard);
   }
-  .card::after, .modal-card::after{
+  .card::after, .modal-card::after, .receipt-capture::after{
     bottom: 10px; right: 10px;
     border-bottom: 1px solid var(--mustard);
     border-right: 1px solid var(--mustard);
   }
-  .card, .modal-card{ border-top: 3px solid var(--mustard); }
+  .card, .modal-card, .receipt-capture{ border-top: 3px solid var(--mustard); }
+
+  /* standalone "keepsake" card — this is the exact element saved as an image */
+  .receipt-capture{
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 22px 20px 20px;
+    margin-bottom: 22px;
+    position: relative;
+    box-sizing: border-box;
+  }
 
   .card-title{
     position: relative;
@@ -174,6 +186,7 @@
   }
 
   .detail{ display:flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--paper-shadow); font-size: 15px; }
+  .detail.picker{ border-bottom: none; }
   .detail:last-of-type{ border-bottom: none; }
   .detail .label{ min-width: 84px; text-transform:uppercase; font-size:10.5px; letter-spacing:1.2px; color:#9c8a72; padding-top:3px; font-weight:600; }
   .detail .value{ flex:1; line-height:1.55; font-weight: 500; }
@@ -192,7 +205,7 @@
     outline: none;
   }
   .detail.picker input:focus{ box-shadow: 0 0 0 2px rgba(176,141,87,0.35); border-color: var(--mustard); }
-  .hint{ font-size: 12px; color: #9c8a72; margin: -10px 0 16px; font-style: italic; }
+  .hint{ font-size: 12px; color: #9c8a72; margin: -10px 0 16px; font-style: italic; text-align: center; }
 
   /* step 1: the question */
   .question{
@@ -366,18 +379,17 @@
   .receipt-line .rl-label{ text-transform: uppercase; font-size: 10.5px; font-weight: 600; letter-spacing: 1.2px; color: #9c8a72; padding-top: 2px; white-space:nowrap; }
   .receipt-line .rl-value{ text-align: right; line-height: 1.5; font-weight: 500; }
 
-  .screenshot-hint{
-    margin-top: 22px;
+  .save-image-hint{
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--hairline);
     text-align: center;
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 400;
     color: #9c8a72;
-    border-top: 1px solid var(--hairline);
-    padding-top: 18px;
     line-height: 1.7;
     font-style: italic;
   }
-  .screenshot-hint b{ color: var(--chalk); font-weight: 500; }
 
   /* photo memories strip */
   .photo-strip{
@@ -1312,45 +1324,45 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   <div class="modal-overlay" id="finalModalOverlay">
     <div class="modal-card" id="stepFinal" onclick="event.stopPropagation()">
       <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
-      <span class="receipt-tag" id="receiptTag"></span>
-      <div class="card-title">Here's My Answer</div>
 
-      <div class="thankyou-banner">Thank you so much for letting me know.</div>
+      <div class="receipt-capture" id="receiptCapture">
+        <span class="receipt-tag" id="receiptTag"></span>
+        <div class="card-title">Here's My Answer</div>
 
-      <div class="receipt-line" id="rowRSVP">
-        <div class="rl-label">RSVP</div>
-        <div class="rl-value" id="rvRSVP">—</div>
-      </div>
-      <div class="receipt-line" id="rowWhen" style="display:none;">
-        <div class="rl-label">When</div>
-        <div class="rl-value" id="rvWhen">—</div>
-      </div>
-      <div class="receipt-line" id="rowWhere" style="display:none;">
-        <div class="rl-label" id="whereLabel">Where</div>
-        <div class="rl-value" id="rvWhere">—</div>
-      </div>
-      <div class="receipt-line" id="rowVibe" style="display:none;">
-        <div class="rl-label">Vibe</div>
-        <div class="rl-value" id="rvVibe">—</div>
-      </div>
-      <div class="receipt-line" id="rowReschedule" style="display:none;">
-        <div class="rl-label">Reschedule to</div>
-        <div class="rl-value" id="rvReschedule">—</div>
-      </div>
-      <div class="receipt-line" id="rowNote" style="display:none;">
-        <div class="rl-label">Note</div>
-        <div class="rl-value" id="rvNote">—</div>
-      </div>
+        <div class="thankyou-banner">Thank you so much for letting me know.</div>
 
-      <div class="screenshot-hint" id="seeYouHint"> <b>You can also screenshot this and send it back so I know your answer.</b> </div>
-      <div class="screenshot-hint"></div>
-
-      <div class="send-options" id="calendarSection" style="display:none;">
-        <div class="send-label">Save the date</div>
-        <div class="rsvp-row">
-          <a class="rsvp-btn no" id="addGoogleCalBtn" href="#" target="_blank" rel="noopener">Add to Google Calendar</a>
-          <a class="rsvp-btn no" id="addIcsBtn" href="#" download="lunch-invite.ics">Download .ics</a>
+        <div class="receipt-line" id="rowRSVP">
+          <div class="rl-label">RSVP</div>
+          <div class="rl-value" id="rvRSVP">—</div>
         </div>
+        <div class="receipt-line" id="rowWhen" style="display:none;">
+          <div class="rl-label">When</div>
+          <div class="rl-value" id="rvWhen">—</div>
+        </div>
+        <div class="receipt-line" id="rowWhere" style="display:none;">
+          <div class="rl-label" id="whereLabel">Where</div>
+          <div class="rl-value" id="rvWhere">—</div>
+        </div>
+        <div class="receipt-line" id="rowVibe" style="display:none;">
+          <div class="rl-label">Vibe</div>
+          <div class="rl-value" id="rvVibe">—</div>
+        </div>
+        <div class="receipt-line" id="rowReschedule" style="display:none;">
+          <div class="rl-label">Reschedule to</div>
+          <div class="rl-value" id="rvReschedule">—</div>
+        </div>
+        <div class="receipt-line" id="rowNote" style="display:none;">
+          <div class="rl-label">Note</div>
+          <div class="rl-value" id="rvNote">—</div>
+        </div>
+      </div>
+
+      <div class="send-options">
+        <div class="send-label">Keep it</div>
+        <div class="rsvp-row">
+          <button class="rsvp-btn yes" id="saveImageBtn" type="button">Save as Image</button>
+        </div>
+        <div class="save-image-hint">Downloads a photo of your answer above — no screenshot needed. Feel free to send it back to me so I know your answer.</div>
       </div>
 
       <div class="send-options">
@@ -1401,6 +1413,8 @@ Would you be free to join me? Let me know if you’re in — your schedule works
 
   <footer>tap Messenger, Gmail, or Mail app to send your reply</footer>
 
+<!-- used by the "Save as Image" button to turn the answer receipt into a downloadable PNG -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
   // ---- EDIT THESE TO MATCH YOUR PLAN ----
   const RECIPIENT_EMAIL = "alyssamaranan01@gmail.com";     // <-- put YOUR email here
@@ -1609,37 +1623,30 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     }
   }
 
-  // ---- add-to-calendar (final modal, yes path only) ------------------------
-  function pad2(n){ return String(n).padStart(2, '0'); }
-  function toICSDate(d){
-    return d.getUTCFullYear() + pad2(d.getUTCMonth() + 1) + pad2(d.getUTCDate()) + 'T' +
-      pad2(d.getUTCHours()) + pad2(d.getUTCMinutes()) + pad2(d.getUTCSeconds()) + 'Z';
-  }
-  function buildCalendarLinks(dateStr, timeStr, where, vibe){
-    if (!dateStr || !timeStr) return null;
-    const start = new Date(dateStr + 'T' + timeStr + ':00');
-    const end = new Date(start.getTime() + 90 * 60000); // default 1.5hr lunch block
-    const startUTC = toICSDate(start);
-    const endUTC = toICSDate(end);
-
-    const gcalParams = new URLSearchParams({
-      action: 'TEMPLATE',
-      text: 'Lunch together',
-      dates: `${startUTC}/${endUTC}`,
-      details: vibe || '',
-      location: where || ''
-    });
-    const googleUrl = `https://calendar.google.com/calendar/render?${gcalParams.toString()}`;
-
-    const icsContent = [
-      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Lunch Invite//EN', 'BEGIN:VEVENT',
-      `UID:${Date.now()}@lunch-invite`, `DTSTAMP:${toICSDate(new Date())}`,
-      `DTSTART:${startUTC}`, `DTEND:${endUTC}`, `SUMMARY:Lunch together`,
-      `LOCATION:${where || ''}`, `DESCRIPTION:${vibe || ''}`, 'END:VEVENT', 'END:VCALENDAR'
-    ].join('\r\n');
-
-    return { googleUrl, icsContent };
-  }
+  // ---- save answer as image (final modal) ----------------------------------
+  const saveImageBtn = document.getElementById('saveImageBtn');
+  saveImageBtn.addEventListener('click', async () => {
+    const target = document.getElementById('receiptCapture');
+    const originalLabel = saveImageBtn.textContent;
+    saveImageBtn.textContent = 'Preparing image…';
+    saveImageBtn.disabled = true;
+    try {
+      const canvas = await html2canvas(target, {
+        backgroundColor: '#fffdf8',
+        scale: 2,
+        useCORS: true
+      });
+      const link = document.createElement('a');
+      link.download = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err){
+      alert("Sorry, couldn't save the image right now — please try again in a moment.");
+    } finally {
+      saveImageBtn.textContent = originalLabel;
+      saveImageBtn.disabled = false;
+    }
+  });
 
   function buildMailto(subject, body){
     return `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -1681,7 +1688,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     receiptTag.textContent = "I'm in";
     receiptTag.className = "receipt-tag yes";
     document.querySelector('.thankyou-banner').textContent = "Thank you so much for saying yes — I’m really looking forward to catching up over lunch.";
-    document.getElementById('seeYouHint').innerHTML = "<b>You can also screenshot this and send it back so I know your answer.</b>";
 
     document.getElementById('rvRSVP').textContent = "Yes, I'm in";
     document.getElementById('rowWhen').style.display = 'flex';
@@ -1709,17 +1715,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     confirmEmailBtn.href = buildGmailWeb(subject, body);
     confirmMailtoBtn.href = buildMailto(subject, body);
     confirmMessengerBtn.href = messengerUrl;
-
-    const calendarSection = document.getElementById('calendarSection');
-    const cal = buildCalendarLinks(date, time, where, EVENT_VIBE);
-    if (cal){
-      calendarSection.style.display = '';
-      document.getElementById('addGoogleCalBtn').href = cal.googleUrl;
-      const icsBlob = new Blob([cal.icsContent], { type: 'text/calendar;charset=utf-8' });
-      document.getElementById('addIcsBtn').href = URL.createObjectURL(icsBlob);
-    } else {
-      calendarSection.style.display = 'none';
-    }
   }
 
   function buildFinalNo(){
@@ -1731,8 +1726,6 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     receiptTag.textContent = "Can't make it";
     receiptTag.className = "receipt-tag no";
     document.querySelector('.thankyou-banner').textContent = "Thank you for letting me know — I completely understand. Hopefully we can have lunch another time.";
-    document.getElementById('seeYouHint').innerHTML = "<b>You can also screenshot this and send it back so I know your answer.</b>";
-    document.getElementById('calendarSection').style.display = 'none';
 
     document.getElementById('rvRSVP').textContent = "Can't make it";
     document.getElementById('rowWhen').style.display = 'none';
