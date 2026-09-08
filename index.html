@@ -1941,6 +1941,20 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   //      image" herself, plus a background download attempt as a bonus.
   // Whichever of these actually gets her the image, we then open the destination link/app.
   async function sendWithOutboundNote({ destinationLabel, entryLabel, icon, emoji, continueLabel, openNow, cantAutoText }){
+    // 1) Open the destination FIRST — synchronously, on this exact click, before any
+    // awaited work. This is what makes it reliable on every device: the moment a click
+    // handler does anything async (even a quick await) before calling window.open() /
+    // location.href, some mobile browsers (especially iOS Safari and in-app browsers)
+    // silently drop the "this came from a real tap" permission and block the navigation
+    // entirely, with no error. So the destination now always opens right away, and the
+    // image hand-off below runs afterward, in parallel, instead of gating it.
+    openNow();
+    statusFinal.textContent = `Opened ${destinationLabel} — getting your keepsake image ready to attach…`;
+    statusFinal.classList.add('show');
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+
+    // 2) Now prepare the keepsake image and offer it via this popup, so she can grab it
+    // and attach it once she's over in the chat/email she just opened.
     setMessengerNoteIcon(icon);
     hideMessengerNoteImg();
     messengerNoteOkBtn.disabled = true;
@@ -1960,39 +1974,30 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       blob = null;
     }
 
-    if (blob){
-      setMessengerNoteText(`${cantAutoText} Tap the button below and I'll hand your image off, then open ${entryLabel}. ${emoji}`);
-    } else {
-      setMessengerNoteText(`Once ${entryLabel} opens, just attach your image and hit send. ${emoji}`);
+    if (!blob){
+      setMessengerNoteText(`I've opened ${destinationLabel} for you already — just attach your image there and hit send. ${emoji}`);
+      messengerNoteOkBtn.textContent = 'Got it';
+      messengerNoteOkBtn.disabled = false;
+      messengerNoteOkBtn.onclick = () => closeMessengerNote();
+      return;
     }
 
+    setMessengerNoteText(`${cantAutoText} Tap the button below and I'll hand your image off so you can attach it in ${entryLabel}. ${emoji}`);
     messengerNoteOkBtn.disabled = false;
     messengerNoteOkBtn.textContent = continueLabel;
 
     messengerNoteOkBtn.onclick = async () => {
-      if (!blob){
-        closeMessengerNote();
-        openNow();
-        statusFinal.textContent = `Opened ${destinationLabel}…`;
-        statusFinal.classList.add('show');
-        pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
-        return;
-      }
-
       messengerNoteOkBtn.disabled = true;
       messengerNoteOkBtn.textContent = 'One sec…';
       const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
 
-      // 1) Native share sheet — most reliable hand-off on Android/iOS.
+      // a) Native share sheet — most reliable hand-off on Android/iOS.
       if (navigator.canShare && navigator.share){
         try {
           const file = new File([blob], filename, { type: 'image/png' });
           if (navigator.canShare({ files: [file] })){
             await navigator.share({ files: [file] });
             closeMessengerNote();
-            statusFinal.textContent = `Shared! If you picked ${destinationLabel}, your image should already be there — just hit send.`;
-            statusFinal.classList.add('show');
-            pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
             messengerNoteOkBtn.disabled = false;
             return;
           }
@@ -2007,7 +2012,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
         }
       }
 
-      // 2) Clipboard image copy, attempted on this same fresh tap.
+      // b) Clipboard image copy, attempted on this same fresh tap.
       let copied = false;
       if (navigator.clipboard && window.ClipboardItem){
         try {
@@ -2020,15 +2025,11 @@ Would you be free to join me? Let me know if you’re in — your schedule works
 
       if (copied){
         closeMessengerNote();
-        openNow();
-        statusFinal.textContent = `Opened ${destinationLabel} — paste your image in and send.`;
-        statusFinal.classList.add('show');
-        pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
         messengerNoteOkBtn.disabled = false;
         return;
       }
 
-      // 3) Last resort: show the image right here so she can long-press it, and
+      // c) Last resort: show the image right here so she can long-press it, and
       // try an automatic download in the background too as a bonus.
       showMessengerNoteImg(blob);
       try {
@@ -2044,16 +2045,10 @@ Would you be free to join me? Let me know if you’re in — your schedule works
         // ignore — the on-screen image is the reliable fallback regardless
       }
 
-      setMessengerNoteText(`${cantAutoText} I couldn't hand it off automatically — <strong>long-press the image below</strong> and tap <strong>Copy image</strong> (or Download image), then open ${entryLabel} yourself and attach it. ${emoji}`);
-      messengerNoteOkBtn.textContent = `Open ${destinationLabel}`;
+      setMessengerNoteText(`I couldn't hand it off automatically — <strong>long-press the image below</strong> and tap <strong>Copy image</strong> (or Download image), then attach it in ${entryLabel} yourself. ${emoji}`);
+      messengerNoteOkBtn.textContent = `Got it`;
       messengerNoteOkBtn.disabled = false;
-      messengerNoteOkBtn.onclick = () => {
-        closeMessengerNote();
-        openNow();
-        statusFinal.textContent = `Opened ${destinationLabel} — attach your saved image and send.`;
-        statusFinal.classList.add('show');
-        pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
-      };
+      messengerNoteOkBtn.onclick = () => closeMessengerNote();
     };
   }
 
