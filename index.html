@@ -181,6 +181,9 @@
   .detail.picker .value{ display:flex; gap:8px; flex-wrap:wrap; }
   .detail.picker input[type="date"],
   .detail.picker input[type="time"]{
+    -webkit-appearance: auto;
+    appearance: auto;
+    color-scheme: light;
     background: #f7f2e8;
     border: 1px solid var(--hairline);
     border-radius: 3px;
@@ -189,8 +192,13 @@
     font-size: 14px;
     color: var(--ink);
     padding: 8px 12px;
+    min-height: 44px;
+    min-width: 0;
+    max-width: 100%;
     outline: none;
   }
+  .detail.picker input[type="date"],
+  .detail.picker input[type="time"]{ width: 100%; }
   .detail.picker input:focus{ box-shadow: 0 0 0 2px rgba(176,141,87,0.35); border-color: var(--mustard); }
   .hint{ font-size: 12px; color: #9c8a72; text-align: center; margin: 0 0 16px; font-style: italic; }
 
