@@ -1971,86 +1971,66 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     messengerNoteOkBtn.disabled = false;
     messengerNoteOkBtn.textContent = continueLabel;
 
-    // 2) Only once she taps Continue do we actually act. We try the native share
-    // sheet FIRST, while this tap's focus/activation is freshest — Messenger/
-    // Gmail/Mail switching away afterward can cause the page to lose focus,
-    // and both the Clipboard API and (on some browsers) the Share API silently
-    // fail once that happens. So hand-off is attempted before navigation, not
-    // after, and the destination still opens right in this same click either way.
-    messengerNoteOkBtn.onclick = async () => {
-      messengerNoteOkBtn.disabled = true;
-      messengerNoteOkBtn.textContent = 'One sec…';
-      const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
-      let shared = false;
-
-      if (blob && navigator.canShare && navigator.share){
-        try {
-          const file = new File([blob], filename, { type: 'image/png' });
-          if (navigator.canShare({ files: [file] })){
-            await navigator.share({ files: [file] });
-            shared = true;
-          }
-        } catch (err){
-          if (err && err.name === 'AbortError'){
-            // she backed out of the share sheet on purpose — let her try again
-            messengerNoteOkBtn.disabled = false;
-            messengerNoteOkBtn.textContent = continueLabel;
-            return;
-          }
-          // otherwise fall through to open + clipboard fallback below
-        }
-      }
-
+    // 2) Only once she taps Continue do we actually act. Opening the destination
+    // is ALWAYS the very first synchronous thing this click handler does — no
+    // awaited work runs before it. That is the one rule that keeps navigation
+    // reliable on every device: the instant a click handler does anything async
+    // first, mobile browsers can silently drop the "this was a real tap" signal
+    // and block window.open()/location.href entirely. So Messenger/Gmail/Mail
+    // opens immediately, no matter what happens with the image.
+    //
+    // The image hand-off runs afterward, in parallel, and never gets to delay
+    // or block that navigation. Because switching to another app takes away
+    // this page's focus, automatic hand-off (share sheet / clipboard) becomes
+    // unreliable at that exact moment on some devices — so alongside trying it,
+    // we always also show the image on-screen right away as a guaranteed
+    // fallback she can long-press to save, instead of hoping the automatic
+    // method worked.
+    messengerNoteOkBtn.onclick = () => {
       openNow();
       closeMessengerNote();
       statusFinal.classList.add('show');
       pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
 
-      if (shared){
-        statusFinal.textContent = `Shared your image! If you picked ${destinationLabel}, it should already be there — just paste/attach your answer and send.`;
-        messengerNoteOkBtn.disabled = false;
-        return;
-      }
-
       if (!blob){
         statusFinal.textContent = `Opened ${destinationLabel} — attach your image there and hit send.`;
-        messengerNoteOkBtn.disabled = false;
         return;
       }
 
-      statusFinal.textContent = `Opened ${destinationLabel} — getting your keepsake image ready to attach…`;
+      statusFinal.textContent = `Opened ${destinationLabel} — here's your keepsake image to attach.`;
       handOffImage(blob, destinationLabel, entryLabel, emoji);
-      messengerNoteOkBtn.disabled = false;
     };
   }
 
-  // Secondary best-effort image hand-off, used only when native share wasn't
-  // available. Tries a clipboard image copy first, then falls back to showing
-  // the image on-screen (with a background download attempt) so she can
-  // long-press/save it herself.
+  // Image hand-off, run right after the destination has already opened. Tries a
+  // native share and a clipboard image copy in parallel as automatic best-effort
+  // methods, but — since switching apps can take away this page's focus at any
+  // moment on mobile, making both of those unreliable — it ALSO always shows the
+  // image on-screen immediately (with a background download attempt) as a
+  // guaranteed fallback she can long-press/save herself, rather than waiting to
+  // see if the automatic methods worked.
   async function handOffImage(blob, destinationLabel, entryLabel, emoji){
     const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
 
-    let copied = false;
+    if (navigator.canShare && navigator.share){
+      try {
+        const file = new File([blob], filename, { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })){
+          navigator.share({ files: [file] }).catch(() => {});
+        }
+      } catch (err){ /* ignore — fall through to the on-screen fallback below */ }
+    }
     if (navigator.clipboard && window.ClipboardItem){
       try {
-        await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
-        copied = true;
-      } catch (err){
-        copied = false;
-      }
+        navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]).catch(() => {});
+      } catch (err){ /* ignore — fall through to the on-screen fallback below */ }
     }
 
-    if (copied){
-      statusFinal.textContent = `Opened ${destinationLabel} — paste your image in and send.`;
-      statusFinal.classList.add('show');
-      return;
-    }
-
-    // Last resort: show the image in the popup so she can long-press it, and try
-    // an automatic download in the background too as a bonus.
+    // Guaranteed fallback: show the image right here so she can long-press it
+    // (works regardless of whether the share/clipboard attempts above succeed),
+    // and try an automatic download in the background too as a bonus.
     setMessengerNoteIcon("💾");
-    setMessengerNoteText(`I couldn't hand your image off automatically — <strong>long-press the image below</strong> and tap <strong>Copy image</strong> (or Download image), then attach it in ${entryLabel} yourself. ${emoji}`);
+    setMessengerNoteText(`Your reply's already sent — this is your keepsake image. <strong>Long-press it below</strong> and tap <strong>Copy image</strong> (or Download image), then attach it in ${entryLabel} if it didn't come through automatically. ${emoji}`);
     showMessengerNoteImg(blob);
     messengerNoteOkBtn.textContent = 'Got it';
     messengerNoteOkBtn.disabled = false;
