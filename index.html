@@ -2080,15 +2080,16 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   window.addEventListener('focus', resolvePendingThankYou);
   window.addEventListener('pageshow', resolvePendingThankYou); // iOS Safari back/forward cache
 
-  confirmEmailBtn.addEventListener('click', () => {
-    statusFinal.textContent = "Opening Gmail in a new tab — hit send to confirm.";
-    statusFinal.classList.add('show');
-    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+  // mailto: links and Gmail's web compose URL have no way to carry a file —
+  // there's no browser API for a link to pre-attach an image, on any device.
+  // So both buttons now try, in order: (1) the OS share sheet with the
+  // keepsake image already attached — the most reliable path on phones,
+  // since she can pick Gmail/Mail straight from it; (2) copying the image to
+  // the clipboard and opening Gmail/Mail so she can just paste it in; (3)
+  // downloading the image and opening Gmail/Mail so she can attach it
+  // manually. This mirrors the "Send via Messenger" flow above.
 
-    // target="_blank" can silently fail to open on any device — in-app
-    // browsers block it outright, and some desktop browsers/popup blockers
-    // can too. If the page is still visible after a moment, nudge her toward
-    // the other options instead of leaving her guessing.
+  function armGmailFallback(){
     if (gmailFallbackTimer) clearTimeout(gmailFallbackTimer);
     gmailFallbackTimer = setTimeout(() => {
       if (pendingThankYou && document.visibilityState === 'visible'){
@@ -2097,17 +2098,9 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       }
       gmailFallbackTimer = null;
     }, 1200);
-  });
+  }
 
-  confirmMailtoBtn.addEventListener('click', () => {
-    statusFinal.textContent = "Opening your Mail app — hit send to confirm.";
-    statusFinal.classList.add('show');
-    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
-
-    // mailto: links can go nowhere on any platform (blocked in-app browser,
-    // no mail account/app configured, desktop with nothing set up, etc.) —
-    // so let her know and point her at a working option instead of leaving
-    // her guessing, on every device, not just iPhone.
+  function armMailtoFallback(){
     if (mailtoFallbackTimer) clearTimeout(mailtoFallbackTimer);
     mailtoFallbackTimer = setTimeout(() => {
       if (pendingThankYou && document.visibilityState === 'visible'){
@@ -2116,6 +2109,114 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       }
       mailtoFallbackTimer = null;
     }, 1200);
+  }
+
+  // shared by both email buttons: try share sheet -> clipboard -> download,
+  // then hand off to `openTarget` (a function that actually opens Gmail/Mail).
+  async function sendWithImage({ button, openTarget, armFallback, shareLabel, pasteLabel, downloadLabel, plainLabel }){
+    const originalLabel = button.textContent;
+    button.textContent = 'Preparing image…';
+    button.style.pointerEvents = 'none';
+
+    let blob = null;
+    try {
+      blob = await renderReceiptImageBlob();
+    } catch (err){
+      blob = null; // fall back to the plain link below if the image can't be built
+    }
+
+    button.textContent = originalLabel;
+    button.style.pointerEvents = '';
+
+    if (blob){
+      const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
+
+      // Best: her device's own share sheet with the image already attached —
+      // she picks Gmail or Mail and it's already there, no pasting needed.
+      if (navigator.canShare && navigator.share){
+        try {
+          const file = new File([blob], filename, { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })){
+            await navigator.share({ files: [file], title: lastSubject, text: lastBody });
+            statusFinal.textContent = shareLabel;
+            statusFinal.classList.add('show');
+            pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+            return;
+          }
+        } catch (err){
+          if (err && err.name === 'AbortError') return; // she backed out of the share sheet on purpose
+          // otherwise fall through to the clipboard-image path below
+        }
+      }
+
+      // Next best: copy the actual image (not text) to the clipboard, then
+      // open Gmail/Mail — she just pastes the image into the message body.
+      if (navigator.clipboard && window.ClipboardItem){
+        try {
+          await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
+          statusFinal.textContent = pasteLabel;
+          statusFinal.classList.add('show');
+          pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+          openTarget();
+          armFallback();
+          return;
+        } catch (err){
+          // fall through to the download fallback below
+        }
+      }
+
+      // Last resort: download the image and open Gmail/Mail so she can
+      // attach it from her downloads/files once the compose window opens.
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = downloadUrl;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
+      statusFinal.textContent = downloadLabel;
+      statusFinal.classList.add('show');
+      pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+      openTarget();
+      armFallback();
+      return;
+    }
+
+    // Couldn't generate the image at all — fall back to the original text-only hand-off.
+    statusFinal.textContent = plainLabel;
+    statusFinal.classList.add('show');
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+    openTarget();
+    armFallback();
+  }
+
+  confirmEmailBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const gmailUrl = confirmEmailBtn.href;
+    sendWithImage({
+      button: confirmEmailBtn,
+      openTarget: () => window.open(gmailUrl, '_blank', 'noopener'),
+      armFallback: armGmailFallback,
+      shareLabel: "Opened your share sheet — pick Gmail to send with the image attached.",
+      pasteLabel: "Copied your image! Opening Gmail — paste it into the message (Ctrl/Cmd+V), then hit send.",
+      downloadLabel: "Saved your image — opening Gmail. Attach it from your downloads before you send.",
+      plainLabel: "Opening Gmail in a new tab — hit send to confirm."
+    });
+  });
+
+  confirmMailtoBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const mailtoUrl = confirmMailtoBtn.href;
+    sendWithImage({
+      button: confirmMailtoBtn,
+      openTarget: () => { window.location.href = mailtoUrl; },
+      armFallback: armMailtoFallback,
+      shareLabel: "Opened your share sheet — pick Mail to send with the image attached.",
+      pasteLabel: "Copied your image! Opening your Mail app — paste it into the message, then hit send.",
+      downloadLabel: "Saved your image — opening your Mail app. Attach it from your files before you send.",
+      plainLabel: "Opening your Mail app — hit send to confirm."
+    });
   });
 
   // Tapping "Send via Messenger" no longer jumps straight to Messenger — it
