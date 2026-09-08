@@ -4,24 +4,26 @@
 <meta charset="UTF-8">
 <title>Lunch Memories</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#ffd9e8">
+<meta name="theme-color" content="#f3ede2">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="format-detection" content="telephone=no">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Jost:wght@400;500;600&display=swap');
 
   :root{
-    --board: #ffd9e8;
-    --board2: #ffe8c9;
-    --chalk: #5c3d4a;
-    --mustard: #f6a35a;
-    --tomato: #ff8fa3;
-    --paper: #fffaf2;
-    --paper-shadow: #f3d9d0;
-    --ink: #6b4a52;
-    --green: #8fc9a9;
+    --board: #f3ede2;
+    --board2: #e7dcc7;
+    --chalk: #2f2620;
+    --mustard: #b08d57;
+    --tomato: #8a4a44;
+    --paper: #fffdf8;
+    --paper-shadow: #e3d7c2;
+    --ink: #4a3f34;
+    --green: #5f7a5c;
+    --hairline: #d9caae;
+    --deep: #23201c;
   }
 
   *{ box-sizing: border-box; }
@@ -43,17 +45,12 @@
   body{
     margin:0;
     background:
-      radial-gradient(circle at 12% 18%, rgba(255,255,255,0.55) 0, rgba(255,255,255,0) 40%),
-      radial-gradient(circle at 88% 12%, rgba(255,255,255,0.4) 0, rgba(255,255,255,0) 35%),
-      radial-gradient(circle at 90% 85%, rgba(255,255,255,0.35) 0, rgba(255,255,255,0) 40%),
-      radial-gradient(circle, rgba(255,255,255,0.55) 1.5px, transparent 1.6px),
-      linear-gradient(160deg, var(--board) 0%, var(--board2) 100%);
-    background-size: auto, auto, auto, 26px 26px, auto;
-    background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
-    background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat;
+      repeating-linear-gradient(115deg, rgba(47,38,32,0.025) 0px, rgba(47,38,32,0.025) 1px, transparent 1px, transparent 5px),
+      radial-gradient(circle at 50% 0%, rgba(255,255,255,0.5) 0, rgba(255,255,255,0) 55%),
+      linear-gradient(165deg, var(--board) 0%, var(--board2) 100%);
     background-attachment: scroll;
-    font-family: 'Quicksand', sans-serif;
-    color: var(--chalk);
+    font-family: 'Jost', sans-serif;
+    color: var(--ink);
     min-height:100vh;
     min-height:100dvh;
     display:flex;
@@ -73,104 +70,136 @@
     body{ background-attachment: fixed; }
   }
 
-  /* soft floating doodles scattered across the background — purely decorative, ignore on tap */
-  .doodle{
-    position: fixed;
-    font-size: 34px;
-    opacity: 0.35;
-    pointer-events: none;
-    filter: drop-shadow(0 4px 6px rgba(163,71,95,0.12));
-    z-index: 0;
-  }
-  .doodle.d1{ top: 6%;  left: 6%;  transform: rotate(-12deg); font-size: 30px; }
-  .doodle.d2{ top: 14%; right: 8%; transform: rotate(10deg);  font-size: 26px; }
-  .doodle.d3{ top: 46%; left: 4%;  transform: rotate(8deg);   font-size: 24px; }
-  .doodle.d4{ top: 60%; right: 5%; transform: rotate(-8deg);  font-size: 30px; }
-  .doodle.d5{ bottom: 8%; left: 10%; transform: rotate(6deg); font-size: 24px; }
-  .doodle.d6{ bottom: 14%; right: 10%; transform: rotate(-10deg); font-size: 28px; }
-
   .hero, .card, .photo-strip, footer{ position: relative; z-index: 1; }
 
-  .hero{ text-align:center; width:100%; max-width: 560px; margin-bottom: clamp(28px, 6vw, 40px); padding: 0 4px; }
+  .hero{ text-align:center; width:100%; max-width: 560px; margin-bottom: clamp(28px, 6vw, 40px); padding: 0 4px; animation: heroIn .8s ease both; }
 
-  .eyebrow{
-    font-family:'Quicksand', sans-serif;
-    font-weight: 700;
-    letter-spacing: 2px;
-    font-size: 13px;
-    color: #c9748a;
-    text-transform: uppercase;
-    margin-bottom: 14px;
+  @keyframes heroIn{
+    from{ opacity: 0; transform: translateY(10px); }
+    to{ opacity: 1; transform: translateY(0); }
   }
-  .eyebrow::before{ content: "🌸 "; }
-  .eyebrow::after{ content: " 🌸"; }
+
+  :focus-visible{ outline: 2px solid var(--mustard); outline-offset: 2px; }
+
+  .eyebrow, .flourish{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width: 100%;
+    max-width: 160px;
+    margin: 0 auto 22px;
+  }
+  .eyebrow::before, .eyebrow::after,
+  .flourish::before, .flourish::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--hairline);
+  }
+  .eyebrow span, .flourish span{
+    display:block;
+    flex-shrink:0;
+    width:6px;
+    height:6px;
+    margin: 0 12px;
+    background: var(--mustard);
+    transform: rotate(45deg);
+  }
+  .flourish.tight{ max-width: 120px; margin-bottom: 16px; }
 
   h1{
-    font-family: 'Baloo 2', cursive;
-    font-weight: 800;
-    font-size: clamp(38px, 8vw, 64px);
-    line-height: 1.1;
-    margin: 0 0 14px;
-    transform: rotate(-1deg);
-    color: #a3475f;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: clamp(38px, 8vw, 60px);
+    line-height: 1.14;
+    letter-spacing: 0.2px;
+    margin: 0 0 16px;
+    color: var(--chalk);
   }
 
-  .sub{ font-size: 16px; line-height: 1.6; color: #8a616b; max-width: 440px; margin: 0 auto; }
+  .sub{ font-size: 16.5px; line-height: 1.75; color: var(--ink); max-width: 440px; margin: 0 auto; font-weight: 400; }
 
   /* card */
   .card{
     background: var(--paper);
     color: var(--ink);
-    font-family: 'Quicksand', sans-serif;
+    font-family: 'Jost', sans-serif;
     width: 100%;
     max-width: 420px;
-    padding: clamp(24px, 6vw, 30px) clamp(20px, 5vw, 28px);
-    box-shadow: 0 20px 45px -12px rgba(163, 71, 95, 0.25);
+    padding: clamp(26px, 6vw, 34px) clamp(22px, 5vw, 30px);
+    box-shadow: 0 24px 50px -20px rgba(35, 32, 28, 0.28);
     position: relative;
-    border-radius: 28px;
-    border: 2px solid #fbeee8;
+    border-radius: 6px;
+    border: 1px solid var(--hairline);
     box-sizing: border-box;
   }
-  .card::before, .card::after{ content: none; }
+  .card::before, .card::after,
+  .modal-card::before, .modal-card::after{
+    content:"";
+    position:absolute;
+    width: 22px;
+    height: 22px;
+    pointer-events:none;
+  }
+  .card::before, .modal-card::before{
+    top: 10px; left: 10px;
+    border-top: 1px solid var(--mustard);
+    border-left: 1px solid var(--mustard);
+  }
+  .card::after, .modal-card::after{
+    bottom: 10px; right: 10px;
+    border-bottom: 1px solid var(--mustard);
+    border-right: 1px solid var(--mustard);
+  }
+  .card, .modal-card{ border-top: 3px solid var(--mustard); }
 
   .card-title{
-    font-family: 'Baloo 2', cursive;
-    font-weight: 700;
-    font-size: 19px;
-    letter-spacing: 0.3px;
-    border-bottom: 2px dashed var(--paper-shadow);
+    position: relative;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 23px;
+    letter-spacing: 0.2px;
+    border-bottom: 1px solid var(--hairline);
     padding-bottom: 14px;
-    margin-bottom: 16px;
-    color: #a3475f;
+    margin-bottom: 18px;
+    color: var(--chalk);
+  }
+  .card-title::after{
+    content:"";
+    position:absolute;
+    left: 0; bottom: -1px;
+    width: 28px;
+    height: 1px;
+    background: var(--mustard);
   }
 
-  .detail{ display:flex; gap: 12px; padding: 8px 0; border-bottom: 1px dotted var(--paper-shadow); font-size: 15px; }
+  .detail{ display:flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--paper-shadow); font-size: 15px; }
   .detail:last-of-type{ border-bottom: none; }
-  .detail .label{ min-width: 76px; text-transform:uppercase; font-size:11px; letter-spacing:1px; color:#c9a2a8; padding-top:2px; font-weight:700; }
-  .detail .value{ flex:1; line-height:1.5; font-weight: 600; }
+  .detail .label{ min-width: 84px; text-transform:uppercase; font-size:10.5px; letter-spacing:1.2px; color:#9c8a72; padding-top:3px; font-weight:600; }
+  .detail .value{ flex:1; line-height:1.55; font-weight: 500; }
 
   .detail.picker .value{ display:flex; gap:8px; flex-wrap:wrap; }
   .detail.picker input[type="date"],
   .detail.picker input[type="time"]{
-    background: #fff6ee;
-    border: none;
-    border-radius: 12px;
-    font-family: 'Quicksand', sans-serif;
-    font-weight: 600;
+    background: #f7f2e8;
+    border: 1px solid var(--hairline);
+    border-radius: 3px;
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
     font-size: 14px;
     color: var(--ink);
     padding: 8px 12px;
     outline: none;
   }
-  .detail.picker input:focus{ box-shadow: 0 0 0 2px var(--tomato); }
-  .hint{ font-size: 12px; color: #c9a2a8; margin: -8px 0 14px; }
+  .detail.picker input:focus{ box-shadow: 0 0 0 2px rgba(176,141,87,0.35); border-color: var(--mustard); }
+  .hint{ font-size: 12px; color: #9c8a72; margin: -10px 0 16px; font-style: italic; }
 
   /* step 1: the question */
   .question{
     text-align:center;
-    font-size: 17px;
-    line-height: 1.6;
-    margin-bottom: 22px;
+    font-size: 16.5px;
+    line-height: 1.7;
+    margin-bottom: 24px;
   }
 
   .step{ display:none; }
@@ -179,79 +208,110 @@
   .variant.active{ display:block; }
 
   .answer-tag{
-    display:inline-block;
-    font-size: 11px;
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    font-family: 'Jost', sans-serif;
+    font-size: 10.5px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 700;
-    padding: 6px 14px;
-    margin-bottom: 18px;
-    border-radius: 20px;
+    letter-spacing: 1.4px;
+    font-weight: 600;
+    padding: 6px 16px;
+    margin-bottom: 20px;
+    border-radius: 2px;
+    border: 1px solid currentColor;
   }
-  .answer-tag.yes{ background: var(--green); color: #2e5c43; }
-  .answer-tag.no{ background: var(--tomato); color: #7a2942; }
+  .answer-tag::before{
+    content:"";
+    width: 5px;
+    height: 5px;
+    flex-shrink:0;
+    background: currentColor;
+    transform: rotate(45deg);
+  }
+  .answer-tag.yes{ background: transparent; color: var(--green); }
+  .answer-tag.no{ background: transparent; color: var(--tomato); }
+
+  .steps{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .steps .dot{
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--hairline);
+  }
+  .steps .dot.active{
+    width: 16px;
+    border-radius: 3px;
+    background: var(--mustard);
+  }
 
   .back-link{
     display:block;
     text-align:center;
-    margin-top: 14px;
+    margin-top: 16px;
     font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    color: #c9a2a8;
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    color: #9c8a72;
     background:none;
     border:none;
     cursor:pointer;
     text-decoration: underline;
-    font-family: 'Quicksand', sans-serif;
+    font-family: 'Jost', sans-serif;
   }
 
-  .rsvp-row{ display:flex; gap: 12px; margin-top: 22px; }
+  .rsvp-row{ display:flex; gap: 12px; margin-top: 24px; }
   .rsvp-btn{
     flex:1;
-    padding: 14px;
-    border: none;
-    border-radius: 999px;
-    font-family: 'Baloo 2', cursive;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    font-size: 15px;
+    padding: 15px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    font-size: 14.5px;
     cursor: pointer;
-    transition: transform .15s cubic-bezier(.34,1.56,.64,1), background .15s ease, box-shadow .15s ease;
+    transition: background .2s ease, color .2s ease, border-color .2s ease, transform .15s ease;
     text-align: center;
     text-decoration: none;
     display: inline-block;
   }
-  .rsvp-btn:hover{ transform: translateY(-2px) scale(1.03); }
-  .rsvp-btn:active{ transform: scale(0.96); }
-  .rsvp-btn.yes{ background: var(--green); color: #2e5c43; box-shadow: 0 6px 0 #6fa584; }
-  .rsvp-btn.yes:hover{ background: #a1d6ba; }
-  .rsvp-btn.no{ background: var(--tomato); color: #7a2942; box-shadow: 0 6px 0 #e06b85; }
-  .rsvp-btn.no:hover{ background: #ffa8ba; }
+  .rsvp-btn:hover{ transform: translateY(-1px); }
+  .rsvp-btn:active{ transform: translateY(0); }
+  .rsvp-btn.yes{ background: var(--chalk); color: #f8f3e9; }
+  .rsvp-btn.yes:hover{ background: #443a30; }
+  .rsvp-btn.no{ background: transparent; color: var(--ink); border-color: var(--hairline); }
+  .rsvp-btn.no:hover{ background: #f7f2e8; }
 
-  .note-field{ margin-top: 16px; }
-  .note-field label{ display:block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight:700; color: #c9a2a8; margin-bottom: 6px; }
+  .note-field{ margin-top: 18px; }
+  .note-field label{ display:block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px; font-weight:600; color: #9c8a72; margin-bottom: 7px; }
   .note-field textarea{
     width: 100%;
     resize: none;
     height: 54px;
-    font-family: 'Quicksand', sans-serif;
+    font-family: 'Jost', sans-serif;
     font-size: 14px;
     color: var(--ink);
-    background: #fff6ee;
-    border: none;
-    border-radius: 14px;
+    background: #f7f2e8;
+    border: 1px solid var(--hairline);
+    border-radius: 3px;
     padding: 10px 12px;
     outline: none;
   }
-  .note-field textarea:focus{ box-shadow: 0 0 0 2px var(--tomato); }
+  .note-field textarea:focus{ box-shadow: 0 0 0 2px rgba(176,141,87,0.35); border-color: var(--mustard); }
 
   .status{
     margin-top: 16px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
     text-align: center;
-    color: #c9748a;
+    color: #9c8a72;
     display:none;
     line-height: 1.5;
   }
@@ -263,49 +323,61 @@
     font-size: 12px;
     line-height: 1.5;
     text-align: center;
-    color: #c9748a;
-    font-weight: 600;
+    color: #9c8a72;
+    font-weight: 500;
   }
   .mailto-hint.show{ display:block; }
 
   /* final summary / receipt screen */
   .receipt-tag{
-    display:inline-block;
-    font-family: 'Baloo 2', cursive;
-    font-size: 13px;
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    font-family: 'Jost', sans-serif;
+    font-size: 10.5px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1.2px;
     padding: 7px 16px;
-    margin-bottom: 20px;
-    font-weight: 700;
-    border-radius: 20px;
+    margin-bottom: 22px;
+    font-weight: 600;
+    border-radius: 2px;
+    border: 1px solid currentColor;
   }
-  .receipt-tag.yes{ background: var(--green); color: #2e5c43; }
-  .receipt-tag.no{ background: var(--tomato); color: #7a2942; }
+  .receipt-tag::before{
+    content:"";
+    width: 5px;
+    height: 5px;
+    flex-shrink:0;
+    background: currentColor;
+    transform: rotate(45deg);
+  }
+  .receipt-tag.yes{ background: transparent; color: var(--green); }
+  .receipt-tag.no{ background: transparent; color: var(--tomato); }
 
   .receipt-line{
     display:flex;
     justify-content: space-between;
     gap: 16px;
-    padding: 10px 0;
-    border-bottom: 1px dotted var(--paper-shadow);
+    padding: 11px 0;
+    border-bottom: 1px solid var(--paper-shadow);
     font-size: 15px;
   }
   .receipt-line:last-of-type{ border-bottom: none; }
-  .receipt-line .rl-label{ text-transform: uppercase; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #c9a2a8; padding-top: 2px; white-space:nowrap; }
-  .receipt-line .rl-value{ text-align: right; line-height: 1.5; font-weight: 600; }
+  .receipt-line .rl-label{ text-transform: uppercase; font-size: 10.5px; font-weight: 600; letter-spacing: 1.2px; color: #9c8a72; padding-top: 2px; white-space:nowrap; }
+  .receipt-line .rl-value{ text-align: right; line-height: 1.5; font-weight: 500; }
 
   .screenshot-hint{
-    margin-top: 20px;
+    margin-top: 22px;
     text-align: center;
-    font-size: 13px;
-    font-weight: 600;
-    color: #c9748a;
-    border-top: 2px dashed var(--paper-shadow);
-    padding-top: 16px;
-    line-height: 1.6;
+    font-size: 12.5px;
+    font-weight: 400;
+    color: #9c8a72;
+    border-top: 1px solid var(--hairline);
+    padding-top: 18px;
+    line-height: 1.7;
+    font-style: italic;
   }
-  .screenshot-hint b{ color: #a3475f; }
+  .screenshot-hint b{ color: var(--chalk); font-weight: 500; }
 
   /* photo memories strip */
   .photo-strip{
@@ -315,16 +387,15 @@
     text-align: center;
   }
   .photo-strip-title{
-    font-family: 'Baloo 2', cursive;
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: 0.3px;
-    color: #a3475f;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-style: italic;
+    font-size: 19px;
+    letter-spacing: 0.2px;
+    color: var(--chalk);
     margin-top: clamp(20px, 5vw, 32px);
-    margin-bottom: 14px;
-    transform: rotate(-1deg);
+    margin-bottom: 16px;
   }
-  .photo-strip-title::before{ content: "📸 "; }
 
   .photo-row{
     width: 100%;
@@ -341,7 +412,7 @@
     gap: 20px;
     width: max-content;
     padding: 0 12px;
-    animation: photoSlide 22s linear infinite;
+    animation: photoSlide 26s linear infinite;
   }
   .photo-track.paused{ animation-play-state: paused; }
 
@@ -350,107 +421,50 @@
     to{ transform: translateX(-50%); }
   }
 
-
   .polaroid{
     position: relative;
     flex: 0 0 auto;
-    background: #fff;
-    padding: 7px 7px 24px;
-    border-radius: 20px;
-    box-shadow:
-      0 16px 28px -10px rgba(163,71,95,0.4),
-      0 4px 10px -2px rgba(163,71,95,0.18);
+    background: var(--paper);
+    padding: 8px 8px 22px;
+    border-radius: 3px;
+    border: 1px solid var(--hairline);
+    box-shadow: 0 14px 28px -14px rgba(35,32,28,0.32);
     width: 132px;
     isolation: isolate;
+    transition: transform .2s ease, box-shadow .2s ease;
   }
-  .polaroid:nth-child(odd){ transform: rotate(-5deg); }
-  .polaroid:nth-child(even){ transform: rotate(4deg); }
-  .polaroid:hover{ transform: rotate(0deg) scale(1.05); transition: transform .2s ease; }
-
-  /* CapCut-style glowing gradient frame ring */
-  .polaroid::before{
+  .polaroid:hover{ transform: translateY(-3px); box-shadow: 0 18px 34px -14px rgba(35,32,28,0.4); }
+  .polaroid::before, .polaroid::after{
     content:"";
     position:absolute;
-    inset:-3px;
-    border-radius: 23px;
-    padding: 3px;
-    background: linear-gradient(135deg, var(--tomato), var(--mustard));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    z-index: -1;
-    pointer-events: none;
+    width: 10px;
+    height: 10px;
+    pointer-events:none;
   }
-  .polaroid:nth-child(4n+2)::before{ background: linear-gradient(135deg, var(--green), #cdeedc); }
-  .polaroid:nth-child(4n+3)::before{ background: linear-gradient(135deg, var(--tomato), #ffd9e8); }
-  .polaroid:nth-child(4n+4)::before{ background: linear-gradient(135deg, var(--mustard), var(--green)); }
-
-  /* washi-tape strip peeking over the top edge */
-  .polaroid .tape{
-    position:absolute;
-    top:-11px;
-    left:50%;
-    width:52px;
-    height:22px;
-    transform: translateX(-50%) rotate(-7deg);
-    background:
-      repeating-linear-gradient(135deg, rgba(255,255,255,.55) 0 4px, rgba(255,255,255,.15) 4px 9px),
-      var(--tomato);
-    opacity:.92;
-    border-radius: 2px;
-    box-shadow: 0 3px 6px rgba(92,61,74,.2);
-    z-index: 3;
-  }
-  .polaroid:nth-child(even) .tape{
-    transform: translateX(-50%) rotate(6deg);
-    background:
-      repeating-linear-gradient(135deg, rgba(255,255,255,.55) 0 4px, rgba(255,255,255,.15) 4px 9px),
-      var(--green);
-  }
-
-  /* pop-out sticker badge, classic CapCut collage touch */
-  .polaroid .sticker{
-    position:absolute;
-    top:-10px;
-    right:-10px;
-    width:30px;
-    height:30px;
-    border-radius:50%;
-    background:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:16px;
-    box-shadow: 0 6px 14px -2px rgba(163,71,95,.45);
-    transform: rotate(14deg);
-    z-index: 4;
-  }
+  .polaroid::before{ top: 3px; left: 3px; border-top: 1px solid var(--mustard); border-left: 1px solid var(--mustard); }
+  .polaroid::after{ bottom: 15px; right: 3px; border-bottom: 1px solid var(--mustard); border-right: 1px solid var(--mustard); }
 
   .polaroid .photo{
     width: 100%;
     aspect-ratio: 1 / 1;
-    border-radius: 14px;
+    border-radius: 2px;
     object-fit: cover;
     object-position: center;
     display:block;
-    background: linear-gradient(135deg, var(--tomato), var(--mustard));
+    background: linear-gradient(135deg, #ded0b3, #c9b998);
     cursor: pointer;
-    transition: transform .15s ease;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.6);
+    filter: grayscale(0.08);
+    box-shadow: inset 0 0 0 1px rgba(176,141,87,0.55);
   }
-  .polaroid .photo:hover{ transform: scale(1.03); }
   .polaroid .caption{
-    display:inline-block;
-    margin-top: 9px;
-    font-family: 'Quicksand', sans-serif;
-    font-weight: 700;
-    font-size: 10px;
-    color: #fff;
+    display:block;
+    margin-top: 10px;
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.3px;
+    color: #9c8a72;
     text-align: center;
-    background: linear-gradient(120deg, #ff8fa3, #f6a35a);
-    padding: 3px 10px;
-    border-radius: 20px;
-    box-shadow: 0 3px 6px rgba(163,71,95,.25);
   }
 
   /* lightbox popup shown when a memory photo is tapped */
@@ -458,7 +472,7 @@
     display:none;
     position: fixed;
     inset: 0;
-    background: rgba(92, 61, 74, 0.82);
+    background: rgba(35, 30, 24, 0.86);
     z-index: 50;
     align-items: center;
     justify-content: center;
@@ -470,10 +484,9 @@
   .lightbox img{
     max-width: min(92vw, 480px);
     max-height: 82vh;
-    border-radius: 14px;
+    border-radius: 3px;
     box-shadow: 0 25px 60px -15px rgba(0,0,0,0.5);
-    border: 4px solid var(--paper);
-    animation: popIn .18s cubic-bezier(.34,1.56,.64,1);
+    border: 6px solid var(--paper);
   }
   .lightbox-close{
     position: absolute;
@@ -483,22 +496,22 @@
     height: 38px;
     border-radius: 50%;
     background: var(--paper);
-    color: #a3475f;
+    color: var(--chalk);
     border: none;
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 500;
     cursor: pointer;
     line-height: 1;
   }
   @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
-  @keyframes popIn{ from{ transform: scale(0.85); opacity:0; } to{ transform: scale(1); opacity:1; } }
+  @keyframes popIn{ from{ transform: scale(0.96); opacity:0; } to{ transform: scale(1); opacity:1; } }
 
   /* final-answer modal: pops up over everything once she submits her RSVP */
   .modal-overlay{
     display:none;
     position: fixed;
     inset: 0;
-    background: rgba(92, 61, 74, 0.82);
+    background: rgba(35, 30, 24, 0.86);
     z-index: 60;
     align-items: center;
     justify-content: center;
@@ -511,17 +524,17 @@
   .modal-card{
     background: var(--paper);
     color: var(--ink);
-    font-family: 'Quicksand', sans-serif;
+    font-family: 'Jost', sans-serif;
     width: 100%;
     max-width: 420px;
-    padding: clamp(24px, 6vw, 30px) clamp(20px, 5vw, 28px);
+    padding: clamp(26px, 6vw, 34px) clamp(22px, 5vw, 30px);
     box-shadow: 0 25px 60px -15px rgba(0,0,0,0.5);
-    border-radius: 28px;
-    border: 2px solid #fbeee8;
+    border-radius: 6px;
+    border: 1px solid var(--hairline);
     box-sizing: border-box;
     position: relative;
     margin: auto;
-    animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
+    animation: popIn .2s ease;
   }
   .modal-close{
     position: absolute;
@@ -530,80 +543,86 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #fff6ee;
-    color: #a3475f;
+    background: #f7f2e8;
+    color: var(--chalk);
     border: none;
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 500;
     cursor: pointer;
     line-height: 1;
   }
 
-  /* thank-you modal: pops up after she actually taps send/copy to confirm her reply went out */
+  /* thank-you modal */
   .thankyou-modal-icon{
-    display:block;
-    text-align:center;
-    font-size: 46px;
-    margin-bottom: 6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 16px;
+    border: 1px solid var(--mustard);
+    border-radius: 50%;
+    font-size: 18px;
+    color: var(--mustard);
+    font-family: 'Cormorant Garamond', serif;
   }
   .thankyou-modal-title{
-    font-family: 'Baloo 2', cursive;
-    font-weight: 800;
-    font-size: 24px;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 26px;
     text-align:center;
-    color: #a3475f;
+    color: var(--chalk);
     margin: 0 0 10px;
-    transform: rotate(-1deg);
   }
   .thankyou-modal-text{
     text-align:center;
     font-size: 15px;
-    line-height: 1.6;
-    color: #8a616b;
-    margin: 0 0 22px;
+    line-height: 1.7;
+    color: var(--ink);
+    margin: 0 0 24px;
   }
   .thankyou-modal-done{
     display:block;
     width:100%;
-    padding: 14px;
+    padding: 15px;
     border: none;
-    border-radius: 999px;
-    font-family: 'Baloo 2', cursive;
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: 0.3px;
+    border-radius: 3px;
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 14.5px;
+    letter-spacing: 0.5px;
     cursor: pointer;
-    background: var(--tomato);
-    color: #fff;
+    background: var(--chalk);
+    color: #f8f3e9;
   }
 
   /* organized "how to send" section inside the final modal */
-  .send-options{ margin-top: 22px; }
+  .send-options{ margin-top: 24px; }
   .send-label{
     text-align:center;
-    font-family:'Baloo 2', cursive;
-    font-weight:700;
-    font-size: 12px;
-    letter-spacing: 0.6px;
+    font-family:'Jost', sans-serif;
+    font-weight:600;
+    font-size: 11px;
+    letter-spacing: 1.2px;
     text-transform: uppercase;
-    color: #a3475f;
-    margin-bottom: 10px;
+    color: #9c8a72;
+    margin-bottom: 12px;
   }
   .send-divider{
     display:flex;
     align-items:center;
     text-align:center;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    color: #c9a2a8;
-    margin: 18px 0 10px;
+    color: #9c8a72;
+    margin: 20px 0 12px;
   }
   .send-divider::before, .send-divider::after{
     content:"";
     flex:1;
-    border-top: 1px dashed var(--paper-shadow);
+    border-top: 1px solid var(--hairline);
   }
   .send-divider::before{ margin-right: 10px; }
   .send-divider::after{ margin-left: 10px; }
@@ -612,26 +631,25 @@
     text-align: center;
     font-size: 11.5px;
     line-height: 1.6;
-    color: #c9a2a8;
-    font-weight: 600;
-    margin: -2px 0 12px;
+    color: #9c8a72;
+    font-weight: 400;
+    margin: -2px 0 14px;
   }
 
   /* extra-emphasized thank-you note shown inside the final modal */
   .thankyou-banner{
     text-align: center;
-    font-family: 'Baloo 2', cursive;
-    font-weight: 800;
-    font-size: 17px;
-    line-height: 1.5;
-    color: #7a2942;
-    background: linear-gradient(135deg, #fff0d9, #ffe1ea);
-    border: 2px dashed var(--tomato);
-    border-radius: 18px;
-    padding: 14px 16px;
-    margin-bottom: 18px;
-    transform: rotate(-0.5deg);
-    animation: popIn .25s cubic-bezier(.34,1.56,.64,1);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--chalk);
+    background: #f7f2e8;
+    border: 1px solid var(--hairline);
+    border-radius: 3px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
   }
 
   /* dedication note beneath the memories strip */
@@ -639,42 +657,59 @@
     width: 100%;
     max-width: 420px;
     background: var(--paper);
-    border: 2px dashed var(--paper-shadow);
-    border-radius: 22px;
-    padding: clamp(18px, 5vw, 22px) clamp(18px, 5vw, 26px);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: clamp(20px, 5vw, 26px) clamp(20px, 5vw, 28px);
     margin: -12px 0 clamp(24px, 5vw, 34px);
     text-align: center;
     position: relative;
-    transform: rotate(-0.6deg);
-    box-shadow: 0 14px 30px -14px rgba(163,71,95,0.25);
+    box-shadow: 0 16px 34px -18px rgba(35,32,28,0.3);
     box-sizing: border-box;
   }
-  .dedication-label{
-    font-family: 'Baloo 2', cursive;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.5px;
-    color: #a3475f;
-    text-transform: uppercase;
-    margin-bottom: 10px;
+  .dedication::before{
+    content: "“";
+    position: absolute;
+    top: -6px; left: 18px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 64px;
+    line-height: 1;
+    color: var(--mustard);
+    opacity: 0.35;
+    pointer-events: none;
   }
-  .dedication-label::before{ content: "💌 "; }
+  .dedication-label{
+    font-family: 'Jost', sans-serif;
+    font-weight: 600;
+    font-size: 10.5px;
+    letter-spacing: 1.4px;
+    color: #9c8a72;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
   .dedication-text{
-    font-family: 'Quicksand', sans-serif;
+    font-family: 'Cormorant Garamond', serif;
     font-weight: 500;
-    font-size: 14.5px;
-    line-height: 1.7;
-    color: var(--ink);
+    font-size: 18px;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--chalk);
+  }
+  .dedication-text::first-letter{
+    font-size: 1.7em;
+    font-style: normal;
+    color: var(--mustard);
   }
   .dedication-sign{
     display:block;
-    margin-top: 14px;
-    font-family: 'Baloo 2', cursive;
-    font-size: 14px;
-    color: #c9748a;
+    margin-top: 16px;
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 12.5px;
+    letter-spacing: 0.4px;
+    color: #9c8a72;
   }
 
-  /* corkboard with pinned "receipts" from past lunches */
+  /* keepsake board with pinned "receipts" from past lunches */
   .corkboard{
     width: 100%;
     max-width: 460px;
@@ -682,32 +717,21 @@
     text-align: center;
   }
   .corkboard-title{
-    font-family: 'Baloo 2', cursive;
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: 0.3px;
-    color: #a3475f;
-    margin-bottom: 14px;
-    transform: rotate(-1deg);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-style: italic;
+    font-size: 19px;
+    letter-spacing: 0.2px;
+    color: var(--chalk);
+    margin-bottom: 16px;
   }
-  .corkboard-title::before{ content: "📌 "; }
 
   .cork-frame{
     position: relative;
-    border-radius: 18px;
-    padding: 32px 16px 24px;
-    background:
-      radial-gradient(circle at 15% 22%, rgba(0,0,0,0.12) 0 2px, transparent 3px),
-      radial-gradient(circle at 42% 68%, rgba(0,0,0,0.12) 0 2px, transparent 3px),
-      radial-gradient(circle at 72% 28%, rgba(0,0,0,0.12) 0 2px, transparent 3px),
-      radial-gradient(circle at 88% 78%, rgba(0,0,0,0.10) 0 2px, transparent 3px),
-      radial-gradient(circle at 58% 12%, rgba(0,0,0,0.10) 0 2px, transparent 3px),
-      radial-gradient(circle at 22% 88%, rgba(0,0,0,0.10) 0 2px, transparent 3px),
-      radial-gradient(circle at 8% 60%, rgba(255,255,255,0.12) 0 2px, transparent 3px),
-      linear-gradient(155deg, #d3a06a 0%, #b47c40 100%);
-    box-shadow:
-      0 16px 32px -14px rgba(120, 70, 30, 0.4),
-      inset 0 0 0 8px rgba(139, 90, 43, 0.35);
+    border-radius: 8px;
+    padding: 34px 18px 26px;
+    background: linear-gradient(160deg, var(--deep) 0%, #1a1712 100%);
+    box-shadow: 0 20px 40px -18px rgba(20,17,12,0.55);
     display:flex;
     gap: 20px;
     flex-wrap: wrap;
@@ -715,17 +739,14 @@
   }
 
   .receipt-wrap{ position:relative; flex: 0 0 auto; }
-  .receipt-wrap.tilt-l{ transform: rotate(-5deg); }
-  .receipt-wrap.tilt-r{ transform: rotate(4deg); }
 
   .pin{
     position:absolute;
-    top:-8px; left:50%;
+    top:-6px; left:50%;
     transform: translateX(-50%);
-    width:15px; height:15px;
+    width:6px; height:6px;
     border-radius:50%;
-    background: radial-gradient(circle at 35% 30%, #ff9fb2 0%, #d94f68 55%, #9c2c44 100%);
-    box-shadow: 0 3px 5px rgba(0,0,0,0.45);
+    background: var(--mustard);
     z-index:2;
   }
 
@@ -733,65 +754,101 @@
     position: relative;
     width: 148px;
     background: var(--paper);
-    padding: 16px 12px 24px;
-    font-family: 'Quicksand', sans-serif;
+    padding: 16px 12px 20px;
+    font-family: 'Jost', sans-serif;
     color: var(--ink);
-    box-shadow: 0 10px 20px -8px rgba(0,0,0,0.35);
-  }
-  .receipt::after{
-    content:"";
-    position:absolute;
-    left:0; right:0; bottom:-9px; height:18px;
-    background:
-      linear-gradient(-45deg, transparent 9px, var(--paper) 9px) 0 0,
-      linear-gradient(45deg, transparent 9px, var(--paper) 9px) 0 0;
-    background-size: 18px 18px;
-    background-repeat: repeat-x;
+    box-shadow: 0 12px 24px -10px rgba(0,0,0,0.4);
+    border-radius: 2px;
   }
   .receipt-brand{
-    font-family:'Baloo 2', cursive;
-    font-weight:800;
-    font-size:14px;
-    letter-spacing: 0.5px;
-    color: #c0392b;
+    font-family:'Cormorant Garamond', serif;
+    font-weight:600;
+    font-size:16px;
+    letter-spacing: 0.2px;
+    color: var(--chalk);
     margin-bottom: 2px;
     text-align:center;
   }
   .receipt-sub{
-    font-size:8px;
+    font-size:8.5px;
     letter-spacing:0.6px;
-    color:#b98a94;
+    color:#9c8a72;
     margin-bottom:10px;
     text-transform:uppercase;
     text-align:center;
   }
-  .receipt-rule{ border-top: 1px dashed #d8c3bb; margin: 8px 0; }
-  .receipt-item{ display:flex; justify-content:space-between; gap:6px; font-size:10px; padding:2px 0; }
-  .receipt-total{ display:flex; justify-content:space-between; font-size:11px; font-weight:700; margin-top:6px; }
+  .receipt-rule{ border-top: 1px dashed var(--paper-shadow); margin: 8px 0; }
+  .receipt-item{ display:flex; align-items:flex-end; gap:6px; font-size:10px; padding:2px 0; }
+  .receipt-item span:first-child{ flex:1; overflow:hidden; white-space:nowrap; border-bottom: 1px dotted #c9b998; line-height: 1.7; }
+  .receipt-item span:last-child{ flex-shrink:0; }
+  .receipt-total{ display:flex; justify-content:space-between; font-size:11px; font-weight:600; margin-top:8px; padding-top:6px; border-top: 3px double var(--paper-shadow); }
 
   .stamp-paid{
     position:absolute;
-    bottom: 30px; right: 6px;
-    font-family:'Baloo 2', cursive;
-    font-weight:800;
-    font-size: 14px;
-    letter-spacing: 1px;
-    color: #c0392b;
-    border: 2px solid #c0392b;
-    border-radius: 6px;
-    padding: 1px 5px;
-    transform: rotate(-14deg);
-    opacity: 0.7;
-    mix-blend-mode: multiply;
+    bottom: 24px; right: 8px;
+    font-family:'Jost', sans-serif;
+    font-weight:600;
+    font-size: 11px;
+    letter-spacing: 1.4px;
+    color: var(--mustard);
+    border: 1px solid var(--mustard);
+    border-radius: 2px;
+    padding: 2px 6px;
+    opacity: 0.85;
     pointer-events:none;
   }
 
+  /* corkboard receipt tilt (fixes tilt-l/tilt-r classes that had no CSS behind them) */
+  .tilt-l{ transform: rotate(-3deg); }
+  .tilt-r{ transform: rotate(2.5deg); }
+
+  /* embedded map + directions link (location step) */
+  .map-embed{
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    margin: 4px 0 8px;
+    background: #f7f2e8;
+  }
+  .map-embed iframe{ width:100%; height:100%; border:0; display:block; }
+  .map-link{
+    display:inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--mustard);
+    text-decoration: none;
+    margin-bottom: 18px;
+  }
+  .map-link:hover{ text-decoration: underline; }
+
+  /* live weather check for the chosen date (location step) */
+  .weather-widget{
+    background: #f7f2e8;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+  }
+  .weather-label{
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 1.1px;
+    font-weight: 600;
+    color: #9c8a72;
+    margin-bottom: 6px;
+  }
+  .weather-body{ font-size: 13.5px; font-weight: 500; color: var(--ink); line-height: 1.5; }
+
   footer{
     margin-top: 32px;
-    font-family:'Quicksand', sans-serif;
-    font-weight: 600;
+    font-family:'Jost', sans-serif;
+    font-weight: 400;
     font-size: 12px;
-    color: #b98a94;
+    color: #9c8a72;
     letter-spacing: 0.3px;
     text-align: center;
     max-width: 420px;
@@ -807,17 +864,16 @@
     text-align: center;
   }
   .menu-title{
-    font-family: 'Baloo 2', cursive;
-    font-weight: 800;
-    font-size: clamp(21px, 4.5vw, 27px);
-    color: #a3475f;
-    margin-bottom: 8px;
-    transform: rotate(-0.6deg);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: clamp(24px, 4.5vw, 32px);
+    color: var(--chalk);
+    margin-bottom: 10px;
   }
   .menu-subtitle{
     font-size: 14.5px;
-    line-height: 1.6;
-    color: #8a616b;
+    line-height: 1.7;
+    color: var(--ink);
     max-width: 440px;
     margin: 0 auto clamp(18px, 4vw, 26px);
   }
@@ -841,7 +897,7 @@
     width: 100%;
     height: 100%;
     min-height: 190px;
-    transition: transform .6s cubic-bezier(.34,1.2,.64,1);
+    transition: transform .6s ease;
     transform-style: preserve-3d;
   }
   .menu-card.flipped .menu-card-inner{ transform: rotateY(180deg); }
@@ -852,9 +908,9 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     background: var(--paper);
-    border: 2px dashed var(--paper-shadow);
-    border-radius: 20px;
-    box-shadow: 0 14px 28px -14px rgba(163,71,95,0.3);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    box-shadow: 0 16px 32px -18px rgba(35,32,28,0.35);
     display:flex;
     flex-direction: column;
     align-items:center;
@@ -864,27 +920,44 @@
   }
   .menu-card-back{
     transform: rotateY(180deg);
-    background: linear-gradient(160deg, #fff6ee 0%, var(--paper) 100%);
+    background: #f7f2e8;
   }
 
-  .menu-icon{ font-size: 34px; margin-bottom: 10px; filter: drop-shadow(0 3px 4px rgba(163,71,95,0.15)); }
+  .menu-icon{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 14px;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--mustard);
+  }
   .menu-card-title{
-    font-family: 'Baloo 2', cursive;
-    font-weight: 700;
-    font-size: 15.5px;
-    color: #a3475f;
-    margin-bottom: 8px;
+    font-family: 'Jost', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--chalk);
+    margin-bottom: 10px;
   }
   .menu-card-desc{
     font-size: 12.5px;
-    line-height: 1.5;
-    color: #8a616b;
+    line-height: 1.55;
+    color: var(--ink);
   }
   .menu-card-message{
     font-size: 12.5px;
-    line-height: 1.55;
+    line-height: 1.6;
     color: var(--ink);
-    font-weight: 600;
+    font-weight: 400;
+    font-style: italic;
   }
   .menu-card:hover .menu-card-inner{ transform: translateY(-3px); }
   .menu-card.flipped:hover .menu-card-inner{ transform: rotateY(180deg) translateY(-3px); }
@@ -892,8 +965,9 @@
   .menu-footer{
     margin-top: clamp(16px, 4vw, 22px);
     font-size: 13px;
-    font-weight: 600;
-    color: #c9748a;
+    font-weight: 400;
+    font-style: italic;
+    color: #9c8a72;
   }
 
   @media (min-width: 601px){
@@ -909,7 +983,6 @@
     .rsvp-btn{ padding: 12px 8px; font-size: 13.5px; }
     .detail .label{ min-width: 62px; font-size: 10px; }
     .polaroid{ width: 108px; }
-    .doodle{ display:none; } /* decorative only — free up space/perf on tiny screens */
     .menu-card{ flex: 1 1 100%; max-width: 260px; min-height: 150px; }
     .menu-card-inner{ min-height: 150px; }
   }
@@ -940,12 +1013,12 @@
   @media (min-width: 900px){
     body{ padding-top: 64px; }
     .hero{ max-width: 680px; }
-    h1{ font-size: clamp(46px, 6vw, 64px); }
+    h1{ font-size: clamp(46px, 6vw, 60px); }
     .sub{ font-size: 18px; }
-    .card{ max-width: 480px; padding: 34px 32px; }
+    .card{ max-width: 480px; padding: 36px 34px; }
     .photo-strip{ max-width: 640px; }
     .polaroid{ width: 150px; }
-    .dedication{ max-width: 480px; padding: 26px 30px; }
+    .dedication{ max-width: 480px; padding: 28px 32px; }
     footer{ max-width: 480px; }
   }
 
@@ -959,30 +1032,21 @@
   /* respect iOS "reduce motion" preference for hover/press animations */
   @media (prefers-reduced-motion: reduce){
     .rsvp-btn, .polaroid, .polaroid .photo{ transition: none; }
+    .hero{ animation: none; }
   }
 </style>
 </head>
 <body>
 
-  <span class="doodle d1">🌸</span>
-  <span class="doodle d2">🥢</span>
-  <span class="doodle d3">🍡</span>
-  <span class="doodle d4">🍱</span>
-  <span class="doodle d5">🌸</span>
-  <span class="doodle d6">🧋</span>
-
   <div class="hero">
-    <div class="eyebrow"></div>
+    <div class="eyebrow"><span></span></div>
     <h1>May I invite you <br>
-        to lunch? 🐷🍱</h1>
-    <p class="sub">Hi Ma’am Christine! 😊
+        to lunch?</h1>
+    <p class="sub">Hi Ma’am Christine,<br><br>
 
-I’d love to invite you to lunch! It would be nice to enjoy some good food, take a little break, and have a chance to catch up and talk. 💕<br>
+I’d love to invite you to lunch — a good meal, a little break, and a proper chance to catch up.<br><br>
 
-Would you be free to join me?
-Let me know if you’re in! ✨🥰
-
-Your schedule works best for me. 🌷</p>
+Would you be free to join me? Let me know if you’re in — your schedule works best for me.</p>
   </div>
 
   <!--
@@ -993,7 +1057,8 @@ Your schedule works best for me. 🌷</p>
     to say whatever you'd like each course to hold.
   -->
   <div class="menu-section">
-    <div class="menu-title">Today's Special 💛🍽️<br> A Table Reserved for You 🌷</div>
+    <div class="flourish tight"><span></span></div>
+    <div class="menu-title">Today's Special<br>A Table Reserved for You</div>
     <p class="menu-subtitle">Every course holds a little piece of what I'd love to share with you. <br>
       Prepared with gratitude. Served with respect. Shared with sincerity.</p>
     
@@ -1002,13 +1067,13 @@ Your schedule works best for me. 🌷</p>
       <div class="menu-card" onclick="this.classList.toggle('flipped')">
         <div class="menu-card-inner">
           <div class="menu-card-front">
-            <div class="menu-icon">🥗</div>
+            <div class="menu-icon">I</div>
             <div class="menu-card-title">Appetizer</div>
-            <div class="menu-card-desc">Before the laughter comes the first hello. 😊.</div>
+            <div class="menu-card-desc">Before the laughter comes the first hello.</div>
           </div>
           <div class="menu-card-back">
-            <div class="menu-icon">💬</div>
-            <div class="menu-card-message">A thoughtful beginning.😊</div>
+            <div class="menu-icon">I</div>
+            <div class="menu-card-message">A thoughtful beginning.</div>
           </div>
         </div>
       </div>
@@ -1016,13 +1081,13 @@ Your schedule works best for me. 🌷</p>
       <div class="menu-card" onclick="this.classList.toggle('flipped')">
         <div class="menu-card-inner">
           <div class="menu-card-front">
-            <div class="menu-icon">🍝</div>
+            <div class="menu-icon">II</div>
             <div class="menu-card-title">Main Course</div>
             <div class="menu-card-desc">The moments, questions, and stories I truly want to share with you.</div>
           </div>
           <div class="menu-card-back">
-            <div class="menu-icon">✨</div>
-            <div class="menu-card-message">Filled with cherished lessons, inspiring moments, and sincere gratitude. 🥰</div>
+            <div class="menu-icon">II</div>
+            <div class="menu-card-message">Filled with cherished lessons, inspiring moments, and sincere gratitude.</div>
           </div>
         </div>
       </div>
@@ -1030,20 +1095,20 @@ Your schedule works best for me. 🌷</p>
       <div class="menu-card" onclick="this.classList.toggle('flipped')">
         <div class="menu-card-inner">
           <div class="menu-card-front">
-            <div class="menu-icon">🍰</div>
+            <div class="menu-icon">III</div>
             <div class="menu-card-title">Dessert</div>
             <div class="menu-card-desc">A sweet ending, filled with smiles, little surprises, and words worth remembering.</div>
           </div>
           <div class="menu-card-back">
-            <div class="menu-icon">🎀</div>
-            <div class="menu-card-message">A little reminder of how much you are loved and appreciated.❤️ </div>
+            <div class="menu-icon">III</div>
+            <div class="menu-card-message">A little reminder of how much you are loved and appreciated.</div>
           </div>
         </div>
       </div>
 
     </div>
 
-    <p class="menu-footer">Tap a course to uncover today's little surprises. 🌷❤️</p>
+    <p class="menu-footer">Tap a course to uncover today's little surprises.</p>
   </div>
 
   <!--
@@ -1057,32 +1122,25 @@ Your schedule works best for me. 🌷</p>
 
   
   <div class="photo-strip">
-    <div class="photo-strip-title">💌 Moments Worth Keeping</div>
+    <div class="flourish tight"><span></span></div>
+    <div class="photo-strip-title">Moments Worth Keeping</div>
     <div class="photo-row" id="photoRow">
       <div class="photo-track" id="photoTrack">
       <div class="polaroid">
-        <span class="tape"></span>
-        <span class="sticker">💕</span>
         <img class="photo" src="Images/1.jpg" alt="memory 1" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--tomato), var(--mustard))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
-        <span class="caption">First lunch out ☺️ 🍱</span>
+        <span class="caption">First lunch out</span>
       </div>
       <div class="polaroid">
-        <span class="tape"></span>
-        <span class="sticker">⭐</span>
         <img class="photo" src="Images/1.1.jpg" alt="memory 2" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--mustard), var(--green))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
-        <span class="caption">School Facade 🏫 </span>
+        <span class="caption">School facade</span>
       </div>
       <div class="polaroid">
-        <span class="tape"></span>
-        <span class="sticker">✨</span>
         <img class="photo" src="Images/2.jpg" alt="memory 3" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, var(--green), var(--tomato))'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
-        <span class="caption">Second lunch out 🤍</span>
+        <span class="caption">Second lunch out</span>
       </div>
       <div class="polaroid">
-        <span class="tape"></span>
-        <span class="sticker">🌸</span>
-        <img class="photo" src="Images/2.1.jpg" alt="memory 4" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, #ffd9e8, #f6a35a)'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
-        <span class="caption">Memory 🌸</span>
+        <img class="photo" src="Images/2.1.jpg" alt="memory 4" onclick="openLightbox(this)" onerror="this.style.background='linear-gradient(135deg, #ded0b3, #c9b998)'; this.removeAttribute('src'); this.style.cursor='default'; this.onclick=null;">
+        <span class="caption">Memory</span>
       </div>
       </div>
     </div>
@@ -1096,7 +1154,8 @@ Your schedule works best for me. 🌷</p>
     actual receipts.
   -->
   <div class="corkboard">
-    <div class="corkboard-title">Keeping the receipts, cherishing the moments. ❤</div>
+    <div class="flourish tight"><span></span></div>
+    <div class="corkboard-title">Keeping the receipts, cherishing the moments.</div>
     <div class="cork-frame">
       <div class="receipt-wrap tilt-l">
         <div class="pin"></div>
@@ -1137,9 +1196,9 @@ Your schedule works best for me. 🌷</p>
     Edit the message and signature below to say whatever you want.
   -->
   <div class="dedication">
-    <div class="dedication-label">a little dedication</div>
+    <div class="dedication-label">A little dedication</div>
     <p class="dedication-text">Every one of these moments has been one of my favorites. Here's to making a few more over lunch. Thank you for always saying yes to good food and better company. Until our next lunch. </p>
-    <span class="dedication-sign">— looking forward to the next receipt. 🧾❤ </span>
+    <span class="dedication-sign">— looking forward to the next receipt.</span>
   </div>
 
   <!-- lightbox: opens full-size when a memory photo is clicked -->
@@ -1152,18 +1211,19 @@ Your schedule works best for me. 🌷</p>
 
     <!-- STEP 1: the question, no details yet -->
     <div class="step active" id="step1">
-      <div class="card-title">Are You In? 🥢</div>
-      <p class="question">Before anything else — Lunch this week. In or out? 😊 </p>
+      <div class="card-title">Are You In?</div>
+      <p class="question">Before anything else — lunch this week. In, or out?</p>
       <div class="rsvp-row">
-        <button class="rsvp-btn yes" id="yesBtn">Yes, I'm in! 🎉</button>
-        <button class="rsvp-btn no" id="noBtn">Can't make it 🥲</button>
+        <button class="rsvp-btn yes" id="yesBtn">Yes, I'm in</button>
+        <button class="rsvp-btn no" id="noBtn">Can't make it</button>
       </div>
     </div>
 
     <!-- STEP 2 (yes path, part A): pick date & time first -->
     <div class="step" id="stepYesTime">
       <span class="answer-tag yes">yay, you're in!</span>
-      <div class="card-title">When Are You Free? 📅  </div>
+      <div class="steps"><span class="dot active"></span><span class="dot"></span></div>
+      <div class="card-title">When Are You Free?</div>
 
       <div class="detail picker">
         <div class="label">Date</div>
@@ -1180,7 +1240,7 @@ Your schedule works best for me. 🌷</p>
       <div class="hint">pick whatever date and time actually works for you</div>
 
       <div class="rsvp-row">
-        <button class="rsvp-btn yes" id="nextToLocationBtn">Next: pick a spot 🍡</button>
+        <button class="rsvp-btn yes" id="nextToLocationBtn">Next: pick a spot</button>
       </div>
       <button class="back-link" id="backFromTimeBtn">← change my answer</button>
     </div>
@@ -1188,11 +1248,22 @@ Your schedule works best for me. 🌷</p>
     <!-- STEP 3 (yes path, part B): location shown after date/time is set -->
     <div class="step" id="stepYesLocation">
       <span class="answer-tag yes">yay, you're in!</span>
-      <div class="card-title">The Spot 📍</div>
+      <div class="steps"><span class="dot"></span><span class="dot active"></span></div>
+      <div class="card-title">The Spot</div>
 
       <div class="detail"><div class="label">When</div><div class="value" id="chosenWhen">—</div></div>
       <div class="detail"><div class="label">Where</div><div class="value" id="dWhere">SM North</div></div>
-      <div class="detail"><div class="label">Vibe</div><div class="value" id="dVibe">Lunch with unlimited kwento—refills included 😂🐷🍱</div></div>
+      <div class="detail"><div class="label">Vibe</div><div class="value" id="dVibe">Lunch with unlimited kwento — refills included</div></div>
+
+      <div class="map-embed" id="locationMap">
+        <iframe src="https://www.google.com/maps?q=SM%20North%20EDSA%2C%20Quezon%20City&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map to the lunch spot"></iframe>
+      </div>
+      <a class="map-link" id="directionsLink" href="https://www.google.com/maps/dir/?api=1&destination=SM%20North%20EDSA%2C%20Quezon%20City" target="_blank" rel="noopener">Get directions →</a>
+
+      <div class="weather-widget">
+        <div class="weather-label">Weather Check</div>
+        <div class="weather-body" id="weatherBody">Pick a date above to see the forecast.</div>
+      </div>
 
       <div class="note-field">
         <label for="suggestLocation">Prefer somewhere else? Suggest a spot (optional)</label>
@@ -1205,7 +1276,7 @@ Your schedule works best for me. 🌷</p>
       </div>
 
       <div class="rsvp-row">
-        <button class="rsvp-btn yes" id="showAnswerYesBtn">Show my answer 💌</button>
+        <button class="rsvp-btn yes" id="showAnswerYesBtn">Show my answer</button>
       </div>
       <button class="back-link" id="backFromLocationBtn">← change the time</button>
     </div>
@@ -1213,7 +1284,7 @@ Your schedule works best for me. 🌷</p>
     <!-- shown when she says no: no picker needed -->
     <div class="step" id="noVariant">
       <span class="answer-tag no">aw, next time!</span>
-      <div class="card-title">No Worries 🤍</div>
+      <div class="card-title">No Worries</div>
       <p class="question" style="margin-bottom:18px;">Totally fine — want to send a quick note back?</p>
 
       <div class="detail picker">
@@ -1229,7 +1300,7 @@ Your schedule works best for me. 🌷</p>
       </div>
 
       <div class="rsvp-row">
-        <button class="rsvp-btn no" id="showAnswerNoBtn">Show my answer 💌</button>
+        <button class="rsvp-btn no" id="showAnswerNoBtn">Show my answer</button>
       </div>
       <button class="back-link" id="backFromNoBtn">← change my answer</button>
     </div>
@@ -1242,9 +1313,9 @@ Your schedule works best for me. 🌷</p>
     <div class="modal-card" id="stepFinal" onclick="event.stopPropagation()">
       <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
       <span class="receipt-tag" id="receiptTag"></span>
-      <div class="card-title">Here's My Answer 🎀</div>
+      <div class="card-title">Here's My Answer</div>
 
-      <div class="thankyou-banner">Thank you so much for letting me know! 💕</div>
+      <div class="thankyou-banner">Thank you so much for letting me know.</div>
 
       <div class="receipt-line" id="rowRSVP">
         <div class="rl-label">RSVP</div>
@@ -1271,22 +1342,30 @@ Your schedule works best for me. 🌷</p>
         <div class="rl-value" id="rvNote">—</div>
       </div>
 
-      <div class="screenshot-hint" id="seeYouHint"> <b>Note: 📸 Or you can screenshot this and send it back so I know your answer. 😜</b> </div>
+      <div class="screenshot-hint" id="seeYouHint"> <b>You can also screenshot this and send it back so I know your answer.</b> </div>
       <div class="screenshot-hint"></div>
 
-      <div class="send-options">
-        <div class="send-label">💬 Fastest — chat</div>
+      <div class="send-options" id="calendarSection" style="display:none;">
+        <div class="send-label">Save the date</div>
         <div class="rsvp-row">
-          <a class="rsvp-btn yes" id="confirmMessengerBtn" href="#" target="_blank" rel="noopener"> 💬 Send via Messenger</a>
+          <a class="rsvp-btn no" id="addGoogleCalBtn" href="#" target="_blank" rel="noopener">Add to Google Calendar</a>
+          <a class="rsvp-btn no" id="addIcsBtn" href="#" download="lunch-invite.ics">Download .ics</a>
+        </div>
+      </div>
+
+      <div class="send-options">
+        <div class="send-label">Fastest — chat</div>
+        <div class="rsvp-row">
+          <a class="rsvp-btn yes" id="confirmMessengerBtn" href="#" target="_blank" rel="noopener">Send via Messenger</a>
         </div>
 
         <div class="send-divider">or send by email</div>
-        <div class="email-device-hint">💻 On a laptop/desktop? Use Gmail. &nbsp;·&nbsp; 📱 On your phone? Use Mail app instead.</div>
+        <div class="email-device-hint">On a laptop or desktop, use Gmail. On your phone, use your Mail app instead.</div>
         <div class="rsvp-row">
-          <a class="rsvp-btn yes" id="confirmEmailBtn" href="#" target="_blank" rel="noopener"> 📧 Send via Gmail</a>
+          <a class="rsvp-btn yes" id="confirmEmailBtn" href="#" target="_blank" rel="noopener">Send via Gmail</a>
         </div>
         <div class="rsvp-row" style="margin-top:10px;">
-          <a class="rsvp-btn no" id="confirmMailtoBtn" href="#"> ✉️ Use my Mail app instead</a>
+          <a class="rsvp-btn no" id="confirmMailtoBtn" href="#">Use my Mail app instead</a>
         </div>
         <div class="mailto-hint" id="mailtoHint"></div>
       </div>
@@ -1299,7 +1378,7 @@ Your schedule works best for me. 🌷</p>
   <div class="modal-overlay" id="thankYouModalOverlay">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close" id="thankYouCloseBtn" aria-label="Close">✕</button>
-      <span class="thankyou-modal-icon" id="thankYouIcon">💌</span>
+      <span class="thankyou-modal-icon" id="thankYouIcon">✓</span>
       <div class="thankyou-modal-title">Thank You!</div>
       <p class="thankyou-modal-text" id="thankYouText">Thanks so much for letting me know — your reply is on its way!</p>
       <button class="thankyou-modal-done" id="thankYouDoneBtn">Done</button>
@@ -1312,10 +1391,10 @@ Your schedule works best for me. 🌷</p>
   <div class="modal-overlay" id="messengerNoteOverlay">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close" id="messengerNoteCloseBtn" aria-label="Close">✕</button>
-      <span class="thankyou-modal-icon">💬</span>
+      <span class="thankyou-modal-icon">✓</span>
       <div class="thankyou-modal-title">Quick Heads Up!</div>
-      <p class="thankyou-modal-text">Messenger can't auto-fill a message, so I'll copy your answer to your clipboard first. Once the chat opens, just <b>paste it in and hit send</b>. 💕</p>
-      <button class="thankyou-modal-done" id="messengerContinueBtn">Continue to Messenger 💬</button>
+      <p class="thankyou-modal-text">Messenger can't auto-fill a message, so I'll copy your answer to your clipboard first. Once the chat opens, just <b>paste it in and hit send</b>.</p>
+      <button class="thankyou-modal-done" id="messengerContinueBtn">Continue to Messenger</button>
       <button class="back-link" id="messengerCancelBtn" style="margin-top:12px;">← never mind</button>
     </div>
   </div>
@@ -1325,8 +1404,13 @@ Your schedule works best for me. 🌷</p>
 <script>
   // ---- EDIT THESE TO MATCH YOUR PLAN ----
   const RECIPIENT_EMAIL = "alyssamaranan01@gmail.com";     // <-- put YOUR email here
-  const EVENT_WHERE = "SM North 😊";
-  const EVENT_VIBE  = "Lunch with unlimited kwento—refills included 😂🐷🍱";
+  const EVENT_WHERE = "SM North";
+  const EVENT_VIBE  = "Lunch with unlimited kwento — refills included";
+  // Coordinates + search text for the map and weather widgets on the location step.
+  // Update these if EVENT_WHERE above changes.
+  const EVENT_LAT = 14.6564;
+  const EVENT_LON = 121.0298;
+  const EVENT_MAP_QUERY = "SM North EDSA, Quezon City";
   // Your Facebook Messenger username (the part after m.me/ in your personal
   // Messenger link, e.g. "https://m.me/john.doe.123" -> "john.doe.123").
   // Messenger links can't pre-fill the message text, so tapping the button
@@ -1418,7 +1502,7 @@ Your schedule works best for me. 🌷</p>
   const thankYouText = document.getElementById('thankYouText');
   function openThankYouModal(message, icon){
     thankYouText.textContent = message;
-    thankYouIcon.textContent = icon || '💌';
+    thankYouIcon.textContent = icon || '✓';
     closeFinalModal();
     thankYouModalOverlay.classList.add('show');
   }
@@ -1467,6 +1551,96 @@ Your schedule works best for me. 🌷</p>
     return `${weekday}, ${dateLabel}`;
   }
 
+  // ---- map + weather (location step) --------------------------------------
+  function updateLocationExtras(){
+    const customLoc = document.getElementById('suggestLocation').value.trim();
+    const mapQuery = customLoc || EVENT_MAP_QUERY;
+    const iframe = document.querySelector('#locationMap iframe');
+    iframe.src = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
+    document.getElementById('directionsLink').href =
+      `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
+  }
+
+  function describeWeatherCode(code){
+    const map = {
+      0: ['☀️', 'Clear skies'], 1: ['🌤️', 'Mostly clear'], 2: ['⛅', 'Partly cloudy'],
+      3: ['☁️', 'Overcast'], 45: ['🌫️', 'Foggy'], 48: ['🌫️', 'Foggy'],
+      51: ['🌦️', 'Light drizzle'], 53: ['🌦️', 'Drizzle'], 55: ['🌦️', 'Heavy drizzle'],
+      61: ['🌧️', 'Light rain'], 63: ['🌧️', 'Rain'], 65: ['🌧️', 'Heavy rain'],
+      80: ['🌦️', 'Rain showers'], 81: ['🌦️', 'Rain showers'], 82: ['⛈️', 'Violent showers'],
+      95: ['⛈️', 'Thunderstorms'], 96: ['⛈️', 'Thunderstorms'], 99: ['⛈️', 'Thunderstorms']
+    };
+    return map[code] ? { icon: map[code][0], label: map[code][1] } : { icon: '🌡️', label: 'Forecast available' };
+  }
+
+  // Uses Open-Meteo (no API key needed). Forecasts only go out ~16 days, so
+  // dates further out than that show a friendly "check back later" message.
+  async function fetchWeatherForDate(dateStr){
+    const weatherBody = document.getElementById('weatherBody');
+    if (!weatherBody) return;
+    if (!dateStr){
+      weatherBody.textContent = "Pick a date above to see the forecast.";
+      return;
+    }
+    const target = new Date(dateStr + 'T00:00:00');
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((target - today) / 86400000);
+    if (diffDays < 0){
+      weatherBody.textContent = "That date's in the past — pick a new one.";
+      return;
+    }
+    if (diffDays > 15){
+      weatherBody.textContent = `Too far out to forecast yet — check back closer to ${formatRescheduleDate(dateStr)}.`;
+      return;
+    }
+    weatherBody.textContent = "Checking the forecast…";
+    try{
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${EVENT_LAT}&longitude=${EVENT_LON}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FManila&start_date=${dateStr}&end_date=${dateStr}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('weather fetch failed');
+      const data = await res.json();
+      const code = data.daily.weathercode[0];
+      const hi = Math.round(data.daily.temperature_2m_max[0]);
+      const lo = Math.round(data.daily.temperature_2m_min[0]);
+      const { icon, label } = describeWeatherCode(code);
+      weatherBody.textContent = `${icon} ${label}, ${lo}°–${hi}°C`;
+    } catch (err){
+      weatherBody.textContent = "Couldn't load the forecast right now — check your weather app closer to the day.";
+    }
+  }
+
+  // ---- add-to-calendar (final modal, yes path only) ------------------------
+  function pad2(n){ return String(n).padStart(2, '0'); }
+  function toICSDate(d){
+    return d.getUTCFullYear() + pad2(d.getUTCMonth() + 1) + pad2(d.getUTCDate()) + 'T' +
+      pad2(d.getUTCHours()) + pad2(d.getUTCMinutes()) + pad2(d.getUTCSeconds()) + 'Z';
+  }
+  function buildCalendarLinks(dateStr, timeStr, where, vibe){
+    if (!dateStr || !timeStr) return null;
+    const start = new Date(dateStr + 'T' + timeStr + ':00');
+    const end = new Date(start.getTime() + 90 * 60000); // default 1.5hr lunch block
+    const startUTC = toICSDate(start);
+    const endUTC = toICSDate(end);
+
+    const gcalParams = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: 'Lunch together',
+      dates: `${startUTC}/${endUTC}`,
+      details: vibe || '',
+      location: where || ''
+    });
+    const googleUrl = `https://calendar.google.com/calendar/render?${gcalParams.toString()}`;
+
+    const icsContent = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Lunch Invite//EN', 'BEGIN:VEVENT',
+      `UID:${Date.now()}@lunch-invite`, `DTSTAMP:${toICSDate(new Date())}`,
+      `DTSTART:${startUTC}`, `DTEND:${endUTC}`, `SUMMARY:Lunch together`,
+      `LOCATION:${where || ''}`, `DESCRIPTION:${vibe || ''}`, 'END:VEVENT', 'END:VCALENDAR'
+    ].join('\r\n');
+
+    return { googleUrl, icsContent };
+  }
+
   function buildMailto(subject, body){
     return `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
@@ -1504,10 +1678,10 @@ Your schedule works best for me. 🌷</p>
     const when = formatWhen(date, time);
     const where = suggestedLocation || EVENT_WHERE;
 
-    receiptTag.textContent = "I'm in! 🎉";
+    receiptTag.textContent = "I'm in";
     receiptTag.className = "receipt-tag yes";
-    document.querySelector('.thankyou-banner').textContent = "💕 Thank you so much for saying yes! I’m really looking forward to catching up over lunch. Can't wait!";
-    document.getElementById('seeYouHint').innerHTML = "<b>Note: 📸 Or you can screenshot this and send it back so I know your answer. 😜</b>";
+    document.querySelector('.thankyou-banner').textContent = "Thank you so much for saying yes — I’m really looking forward to catching up over lunch.";
+    document.getElementById('seeYouHint').innerHTML = "<b>You can also screenshot this and send it back so I know your answer.</b>";
 
     document.getElementById('rvRSVP').textContent = "Yes, I'm in";
     document.getElementById('rowWhen').style.display = 'flex';
@@ -1535,6 +1709,17 @@ Your schedule works best for me. 🌷</p>
     confirmEmailBtn.href = buildGmailWeb(subject, body);
     confirmMailtoBtn.href = buildMailto(subject, body);
     confirmMessengerBtn.href = messengerUrl;
+
+    const calendarSection = document.getElementById('calendarSection');
+    const cal = buildCalendarLinks(date, time, where, EVENT_VIBE);
+    if (cal){
+      calendarSection.style.display = '';
+      document.getElementById('addGoogleCalBtn').href = cal.googleUrl;
+      const icsBlob = new Blob([cal.icsContent], { type: 'text/calendar;charset=utf-8' });
+      document.getElementById('addIcsBtn').href = URL.createObjectURL(icsBlob);
+    } else {
+      calendarSection.style.display = 'none';
+    }
   }
 
   function buildFinalNo(){
@@ -1543,10 +1728,11 @@ Your schedule works best for me. 🌷</p>
     const rescheduleDateStr = document.getElementById('rescheduleDate').value;
     const rescheduleLabel = rescheduleDateStr ? formatRescheduleDate(rescheduleDateStr) : '';
 
-    receiptTag.textContent = "Can't make it 🥲";
+    receiptTag.textContent = "Can't make it";
     receiptTag.className = "receipt-tag no";
-    document.querySelector('.thankyou-banner').textContent = "💕 Thank you for letting me know, Ma’am! I completely understand. Hopefully, we can have lunch another time. 🫶";
-    document.getElementById('seeYouHint').innerHTML = "<b>Note: 📸 Or you can screenshot this and send it back so I know your answer. 😜</b>";
+    document.querySelector('.thankyou-banner').textContent = "Thank you for letting me know — I completely understand. Hopefully we can have lunch another time.";
+    document.getElementById('seeYouHint').innerHTML = "<b>You can also screenshot this and send it back so I know your answer.</b>";
+    document.getElementById('calendarSection').style.display = 'none';
 
     document.getElementById('rvRSVP').textContent = "Can't make it";
     document.getElementById('rowWhen').style.display = 'none';
@@ -1634,7 +1820,7 @@ Your schedule works best for me. 🌷</p>
   confirmEmailBtn.addEventListener('click', () => {
     statusFinal.textContent = "Opening Gmail in a new tab — hit send to confirm.";
     statusFinal.classList.add('show');
-    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "📧" };
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
 
     // Same in-app-browser risk as mailto: links — Instagram/TikTok/Messenger etc.
     // often silently block target="_blank" from opening a new tab on iOS. If the
@@ -1655,7 +1841,7 @@ Your schedule works best for me. 🌷</p>
   confirmMailtoBtn.addEventListener('click', () => {
     statusFinal.textContent = "Opening your Mail app — hit send to confirm.";
     statusFinal.classList.add('show');
-    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✉️" };
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
 
     // iPhone fallback: if the page is still visible after ~1.2s, the Mail app
     // most likely never opened (blocked in-app browser, no Mail account, etc.)
@@ -1691,7 +1877,7 @@ Your schedule works best for me. 🌷</p>
       statusFinal.textContent = "Opening Messenger — copy your answer above and paste it in the chat.";
     }
     statusFinal.classList.add('show');
-    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "💬" };
+    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
     closeMessengerNote();
     window.open(confirmMessengerBtn.href, '_blank', 'noopener');
   });
@@ -1710,8 +1896,13 @@ Your schedule works best for me. 🌷</p>
     const date = document.getElementById('pickDate').value;
     const time = document.getElementById('pickTime').value;
     document.getElementById('chosenWhen').textContent = formatWhen(date, time);
+    updateLocationExtras();
+    fetchWeatherForDate(date);
     showStep(stepYesLocation);
   });
+
+  // if she suggests a different spot, refresh the map to point there instead
+  document.getElementById('suggestLocation').addEventListener('blur', updateLocationExtras);
 
   // location step / no step -> final summary screen
   document.getElementById('showAnswerYesBtn').addEventListener('click', () => {
