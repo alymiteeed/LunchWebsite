@@ -1712,18 +1712,49 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     return toLocalISO(new Date());
   }
 
-  // Belt-and-suspenders: the native min attribute (set below) blocks the
-  // date-picker UI itself on every modern browser, but a few mobile
-  // keyboards/browsers still allow a date to be typed in by hand. This
-  // clamps a field back up to today the moment a past date is entered,
-  // no matter how it got there.
+  // Belt-and-suspenders across every device: the native `min` attribute
+  // blocks the date-picker UI itself on modern desktop/mobile browsers,
+  // but that's not universal — some in-app/webview browsers (Messenger,
+  // Instagram, older Android WebViews) fall back to a plain text field
+  // for type="date" and ignore `min` entirely, and some mobile keyboards
+  // still let a past date be typed in by hand even when the picker UI
+  // itself is blocked. `change` also doesn't fire consistently on every
+  // platform the moment a value becomes invalid (some only fire it on
+  // blur, some fire `input` first). So this clamps on every event that
+  // could signal a completed edit — input, change, and blur — which
+  // covers native pickers, typed entry, and text-field fallbacks alike.
+  function isPastDate(value){
+    return !!value && value < todayISO();
+  }
+  function clampIfPast(input){
+    if (isPastDate(input.value)){
+      input.value = todayISO();
+      return true;
+    }
+    return false;
+  }
   function preventPastDate(input){
-    input.addEventListener('change', () => {
-      if (input.value && input.value < todayISO()){
-        input.value = todayISO();
-      }
+    ['input', 'change', 'blur'].forEach(evt => {
+      input.addEventListener(evt, () => clampIfPast(input));
     });
   }
+
+  // If the page is left open across midnight (phone locked overnight,
+  // tab left in the background), "today" quietly changes underneath it.
+  // Refresh both fields' min + clamp whenever the tab regains focus so
+  // a date that was valid at open but has since become "yesterday"
+  // can't slip through on any device.
+  function refreshDateBounds(){
+    const today = todayISO();
+    const pd = document.getElementById('pickDate');
+    const rd = document.getElementById('rescheduleDate');
+    if (pd){ pd.min = today; clampIfPast(pd); }
+    if (rd){ rd.min = today; clampIfPast(rd); }
+  }
+  window.addEventListener('focus', refreshDateBounds);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refreshDateBounds();
+  });
 
   document.getElementById('pickDate').value = todayISO();
 
@@ -2217,6 +2248,9 @@ Would you be free to join me? Let me know if you’re in — your schedule works
 
   // time step -> location step, showing the chosen date/time
   document.getElementById('nextToLocationBtn').addEventListener('click', () => {
+    // Final guard right before advancing — catches any fallback text-field
+    // browser that skipped every event above and let a past date through.
+    clampIfPast(document.getElementById('pickDate'));
     const date = document.getElementById('pickDate').value;
     const time = document.getElementById('pickTime').value;
     document.getElementById('chosenWhen').textContent = formatWhen(date, time);
@@ -2238,6 +2272,8 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     openFinalModal();
   });
   document.getElementById('showAnswerNoBtn').addEventListener('click', () => {
+    // Same final guard for the optional reschedule date.
+    clampIfPast(document.getElementById('rescheduleDate'));
     document.getElementById('statusFinal').classList.remove('show');
     buildFinalNo();
     openFinalModal();
