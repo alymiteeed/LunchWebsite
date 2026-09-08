@@ -1695,14 +1695,36 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     }
   }
 
-  // default the "When Are You Free" date picker to today's actual date
-  function todayISO(){
-    const d = new Date();
+  // Date helpers — always built from the LOCAL calendar date, never
+  // toISOString() (which converts to UTC and can silently land on the
+  // wrong day depending on the visitor's timezone and time of day — the
+  // exact bug that let an already-passed date slip through as "today" or
+  // as the minimum selectable day on some phones/timezones). This only
+  // relies on the device's own local clock, so it behaves the same way
+  // on laptops, desktops, iPad/tablets, iOS and Android.
+  function toLocalISO(d){
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}`;
   }
+  function todayISO(){
+    return toLocalISO(new Date());
+  }
+
+  // Belt-and-suspenders: the native min attribute (set below) blocks the
+  // date-picker UI itself on every modern browser, but a few mobile
+  // keyboards/browsers still allow a date to be typed in by hand. This
+  // clamps a field back up to today the moment a past date is entered,
+  // no matter how it got there.
+  function preventPastDate(input){
+    input.addEventListener('change', () => {
+      if (input.value && input.value < todayISO()){
+        input.value = todayISO();
+      }
+    });
+  }
+
   document.getElementById('pickDate').value = todayISO();
 
   // memory photo lightbox
@@ -1799,11 +1821,16 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   // default the date picker to a sensible near-term day, but let her pick any date she wants
   const defaultDate = new Date();
   defaultDate.setDate(defaultDate.getDate() + 1);
-  document.getElementById('pickDate').value = defaultDate.toISOString().split('T')[0];
-  document.getElementById('pickDate').min = new Date().toISOString().split('T')[0];
+  document.getElementById('pickDate').value = toLocalISO(defaultDate);
+  document.getElementById('pickDate').min = todayISO();
 
   // reschedule-date picker (in the "Can't make it" step) shouldn't allow picking a day that's already passed
-  document.getElementById('rescheduleDate').min = new Date().toISOString().split('T')[0];
+  document.getElementById('rescheduleDate').min = todayISO();
+
+  // Extra safety net on both date fields (see preventPastDate above) —
+  // covers "Yes, I'm in" and "Can't make it" on every device.
+  preventPastDate(document.getElementById('pickDate'));
+  preventPastDate(document.getElementById('rescheduleDate'));
 
   function formatTime12hr(timeStr){
     if (!timeStr) return "time TBD";
