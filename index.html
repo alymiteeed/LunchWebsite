@@ -593,18 +593,66 @@
   .image-preview-wrap{
     margin: 4px 0 18px;
     border-radius: 6px;
-    overflow: hidden;
+    overflow: auto;
     border: 1px solid var(--hairline);
     box-shadow: 0 12px 30px -14px rgba(35,32,28,0.35);
     background: var(--paper);
     max-height: 55vh;
-    overflow-y: auto;
+    cursor: zoom-in;
   }
+  .image-preview-wrap.zoomed{ cursor: zoom-out; max-height: 65vh; }
   .image-preview-wrap img{
     display: block;
     width: 100%;
     height: auto;
+    opacity: 0;
+    transition: opacity .35s ease, transform .25s ease;
+    transform-origin: top center;
   }
+  .image-preview-wrap img.loaded{ opacity: 1; }
+  .image-preview-wrap.zoomed img{ width: auto; max-width: none; }
+
+  .image-preview-spinner{
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 54px 20px;
+    color: #9c8a72;
+    font-size: 12.5px;
+    letter-spacing: 0.4px;
+  }
+  .image-preview-spinner .spin-ring{
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--hairline);
+    border-top-color: var(--mustard);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  .image-preview-copy-btn{
+    display:block;
+    width:100%;
+    margin-top: 10px;
+    padding: 13px;
+    border: 1px solid var(--hairline);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--ink);
+    font-family:'Jost', sans-serif;
+    font-weight:500;
+    font-size: 13.5px;
+    letter-spacing:0.4px;
+    cursor:pointer;
+    transition: background .2s ease;
+  }
+  .image-preview-copy-btn:hover{ background:#f7f2e8; }
+  .image-preview-copy-btn:disabled,
+  .thankyou-modal-done:disabled{ opacity:.5; cursor:not-allowed; }
+  #imagePreviewStatus{ color: var(--green); font-weight: 600; }
   .modal-card{
     background: var(--paper);
     color: var(--ink);
@@ -1499,11 +1547,17 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close" id="imagePreviewCloseBtn" aria-label="Close">✕</button>
       <div class="thankyou-modal-title">Save This Image?</div>
-      <div class="image-preview-wrap">
-        <img id="imagePreviewImg" alt="Preview of your RSVP keepsake, ready to save">
+      <div class="image-preview-wrap" id="imagePreviewWrap">
+        <div class="image-preview-spinner" id="imagePreviewSpinner">
+          <span class="spin-ring"></span>
+          <span>Preparing your keepsake…</span>
+        </div>
+        <img id="imagePreviewImg" alt="Preview of your RSVP keepsake, ready to save" style="display:none;">
       </div>
       <p class="thankyou-modal-text" id="imagePreviewHint">Tap "Save Image" to download it to your device.</p>
-      <button class="thankyou-modal-done" id="imagePreviewSaveBtn">Save Image</button>
+      <button class="thankyou-modal-done" id="imagePreviewSaveBtn" disabled>Save Image</button>
+      <button class="image-preview-copy-btn" id="imagePreviewCopyBtn" style="display:none;" disabled>Copy Image</button>
+      <div class="status" id="imagePreviewStatus"></div>
       <button class="back-link" id="imagePreviewCancelBtn" style="margin-top:12px;">Cancel</button>
     </div>
   </div>
@@ -1726,32 +1780,62 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   }
 
   // ---- save answer as image (final modal) ----------------------------------
-  // Flow: tap "Save as Image" -> render the keepsake to a PNG -> show it in a
-  // preview modal first -> she taps "Save Image" to actually save it, or
-  // "Cancel"/✕/outside-tap to back out without saving anything.
+  // Flow: tap "Save as Image" -> preview modal opens right away with a loading
+  // spinner -> the keepsake renders and fades in -> she can zoom in to check
+  // it, then Save (native share sheet, falling back to a download) or Copy to
+  // clipboard, or back out with Cancel/✕/outside-tap without saving anything.
   const saveImageBtn = document.getElementById('saveImageBtn');
   const imagePreviewOverlay = document.getElementById('imagePreviewOverlay');
+  const imagePreviewWrap = document.getElementById('imagePreviewWrap');
+  const imagePreviewSpinner = document.getElementById('imagePreviewSpinner');
   const imagePreviewImg = document.getElementById('imagePreviewImg');
   const imagePreviewHint = document.getElementById('imagePreviewHint');
   const imagePreviewSaveBtn = document.getElementById('imagePreviewSaveBtn');
+  const imagePreviewCopyBtn = document.getElementById('imagePreviewCopyBtn');
+  const imagePreviewStatus = document.getElementById('imagePreviewStatus');
   const imagePreviewCancelBtn = document.getElementById('imagePreviewCancelBtn');
   const imagePreviewCloseBtn = document.getElementById('imagePreviewCloseBtn');
 
   let pendingImageBlob = null;
   let pendingImageObjectUrl = null;
 
-  function openImagePreviewModal(blob){
+  function resetImagePreviewModal(){
+    imagePreviewImg.classList.remove('loaded');
+    imagePreviewImg.style.display = 'none';
+    imagePreviewImg.src = '';
+    imagePreviewWrap.classList.remove('zoomed');
+    imagePreviewSpinner.style.display = 'flex';
+    imagePreviewSaveBtn.disabled = true;
+    imagePreviewSaveBtn.textContent = 'Save Image';
+    imagePreviewCopyBtn.disabled = true;
+    imagePreviewCopyBtn.textContent = 'Copy Image';
+    imagePreviewCopyBtn.style.display = 'block';
+    imagePreviewStatus.classList.remove('show');
+    imagePreviewStatus.textContent = '';
+    imagePreviewCancelBtn.textContent = 'Cancel';
+    imagePreviewHint.textContent = 'Getting your keepsake ready…';
+  }
+
+  function openImagePreviewModal(){
+    resetImagePreviewModal();
+    imagePreviewOverlay.classList.add('show');
+  }
+
+  function showImagePreviewImage(blob){
     pendingImageBlob = blob;
     pendingImageObjectUrl = URL.createObjectURL(blob);
+    imagePreviewImg.onload = () => {
+      imagePreviewSpinner.style.display = 'none';
+      imagePreviewImg.style.display = 'block';
+      // fade the image in on the next frame so the opacity transition actually plays
+      requestAnimationFrame(() => imagePreviewImg.classList.add('loaded'));
+    };
     imagePreviewImg.src = pendingImageObjectUrl;
-    // iOS Safari's own "download" flow is unreliable (especially in in-app
-    // browsers), so a long-press-to-save tip is the most dependable fallback
-    // there even though the Save Image button also tries the native share
-    // sheet first on devices that support it.
     imagePreviewHint.textContent = isIOS
-      ? 'Tip: press and hold the image to save it straight to Photos, or tap "Save Image" below.'
-      : 'Tap "Save Image" to download it to your device.';
-    imagePreviewOverlay.classList.add('show');
+      ? 'Tap the image to zoom in. Press and hold it to save straight to Photos, or tap "Save Image" below.'
+      : 'Tap the image to zoom in, then tap "Save Image" to download it.';
+    imagePreviewSaveBtn.disabled = false;
+    imagePreviewCopyBtn.disabled = false;
   }
 
   function closeImagePreviewModal(){
@@ -1763,11 +1847,24 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     pendingImageBlob = null;
   }
 
+  function showImagePreviewStatus(message){
+    imagePreviewStatus.textContent = message;
+    imagePreviewStatus.classList.add('show');
+    imagePreviewCancelBtn.textContent = 'Close';
+  }
+
+  // tap/click the preview to zoom in and check the details, tap again to shrink back
+  imagePreviewWrap.addEventListener('click', () => {
+    if (imagePreviewImg.style.display === 'none') return; // still loading
+    imagePreviewWrap.classList.toggle('zoomed');
+  });
+
   saveImageBtn.addEventListener('click', async () => {
     const target = document.getElementById('receiptCapture');
     const originalLabel = saveImageBtn.textContent;
     saveImageBtn.textContent = 'Preparing image…';
     saveImageBtn.disabled = true;
+    openImagePreviewModal(); // show the preview modal right away with a loading state
     try {
       const canvas = await html2canvas(target, {
         backgroundColor: '#fffdf8',
@@ -1776,8 +1873,9 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       });
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       if (!blob) throw new Error('canvas produced no image data');
-      openImagePreviewModal(blob);
+      showImagePreviewImage(blob);
     } catch (err){
+      closeImagePreviewModal();
       alert("Sorry, couldn't prepare the image right now — please try again in a moment.");
     } finally {
       saveImageBtn.textContent = originalLabel;
@@ -1791,6 +1889,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     const originalLabel = imagePreviewSaveBtn.textContent;
     imagePreviewSaveBtn.textContent = 'Saving…';
     imagePreviewSaveBtn.disabled = true;
+    imagePreviewCopyBtn.disabled = true;
 
     // Prefer the native share sheet where the device supports sharing files —
     // this is the most reliable "save to Photos" path on iOS/Android, since
@@ -1800,20 +1899,18 @@ Would you be free to join me? Let me know if you’re in — your schedule works
         const file = new File([pendingImageBlob], filename, { type: 'image/png' });
         if (navigator.canShare({ files: [file] })){
           await navigator.share({ files: [file] });
-          closeImagePreviewModal();
+          showImagePreviewStatus('✓ Saved! Feel free to close this once you\'re done.');
           imagePreviewSaveBtn.textContent = originalLabel;
           imagePreviewSaveBtn.disabled = false;
+          imagePreviewCopyBtn.disabled = false;
           return;
         }
       }
     } catch (err){
-      // She backed out of the share sheet on purpose — leave the preview open
-      // so she can still use "Save Image" again or the long-press tip.
-      if (err && err.name === 'AbortError'){
-        imagePreviewSaveBtn.textContent = originalLabel;
-        imagePreviewSaveBtn.disabled = false;
-        return;
-      }
+      imagePreviewSaveBtn.textContent = originalLabel;
+      imagePreviewSaveBtn.disabled = false;
+      imagePreviewCopyBtn.disabled = false;
+      if (err && err.name === 'AbortError') return; // she backed out of the share sheet on purpose
       // otherwise fall through to the direct-download fallback below
     }
 
@@ -1826,11 +1923,41 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       document.body.appendChild(link);
       link.click();
       link.remove();
-      closeImagePreviewModal();
+      showImagePreviewStatus('✓ Saved to your device!');
     } catch (err){
       alert("Sorry, couldn't save the image — try pressing and holding the image above instead.");
     } finally {
       imagePreviewSaveBtn.textContent = originalLabel;
+      imagePreviewSaveBtn.disabled = false;
+      imagePreviewCopyBtn.disabled = false;
+    }
+  });
+
+  imagePreviewCopyBtn.addEventListener('click', async () => {
+    if (!pendingImageBlob) return;
+    const originalLabel = imagePreviewCopyBtn.textContent;
+
+    // Not every browser (especially in-app browsers like Messenger/Instagram)
+    // supports copying images to the clipboard — check right at click time
+    // and point her at "Save Image" instead rather than showing a dead button.
+    if (!(navigator.clipboard && window.ClipboardItem)){
+      alert("Copying images isn't supported in this browser — try \"Save Image\" instead.");
+      return;
+    }
+
+    imagePreviewCopyBtn.textContent = 'Copying…';
+    imagePreviewCopyBtn.disabled = true;
+    imagePreviewSaveBtn.disabled = true;
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': pendingImageBlob })
+      ]);
+      showImagePreviewStatus('✓ Copied! You can paste it anywhere now.');
+    } catch (err){
+      alert("Sorry, couldn't copy the image on this device — try \"Save Image\" instead.");
+    } finally {
+      imagePreviewCopyBtn.textContent = originalLabel;
+      imagePreviewCopyBtn.disabled = false;
       imagePreviewSaveBtn.disabled = false;
     }
   });
@@ -1919,7 +2046,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     receiptTag.textContent = "Can't make it";
     receiptTag.className = "receipt-tag no";
     document.querySelector('.thankyou-banner').textContent = "Thank you for letting me know — I completely understand. Hopefully we can have lunch another time.";
-    document.getElementById('captureFooterText').textContent = "Looking forward to the stories, laughter, and catch-up ahead.";
+    document.getElementById('captureFooterText').textContent = "Saved as a little memory — until our next lunch.";
     document.getElementById('captureDate').textContent = `Answered ${formatCaptureDate()}`;
 
     document.getElementById('rvRSVP').textContent = "Can't make it";
