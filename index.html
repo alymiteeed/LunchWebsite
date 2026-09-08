@@ -165,6 +165,60 @@
     box-sizing: border-box;
   }
 
+  .capture-eyebrow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width: 100%;
+    max-width: 110px;
+    margin: 2px auto 10px;
+  }
+  .capture-eyebrow::before, .capture-eyebrow::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--hairline);
+  }
+  .capture-eyebrow span{
+    display:block;
+    flex-shrink:0;
+    width:5px;
+    height:5px;
+    margin: 0 10px;
+    background: var(--mustard);
+    transform: rotate(45deg);
+  }
+  .capture-kicker{
+    text-align:center;
+    font-family: 'Jost', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: #9c8a72;
+    margin-bottom: 16px;
+  }
+
+  .capture-footer{ margin-top: 22px; text-align: center; }
+  .capture-divider{ width: 36px; height: 1px; background: var(--hairline); margin: 0 auto 14px; }
+  .capture-footer-text{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--chalk);
+    margin: 0 0 6px;
+  }
+  .capture-footer-date{
+    display:block;
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #9c8a72;
+  }
+
   .card-title{
     position: relative;
     font-family: 'Cormorant Garamond', serif;
@@ -533,6 +587,24 @@
   }
   .modal-overlay.show{ display:flex; }
   #messengerNoteOverlay{ z-index: 70; }
+  #imagePreviewOverlay{ z-index: 80; }
+
+  /* image preview modal — shows the generated keepsake image before saving */
+  .image-preview-wrap{
+    margin: 4px 0 18px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    box-shadow: 0 12px 30px -14px rgba(35,32,28,0.35);
+    background: var(--paper);
+    max-height: 55vh;
+    overflow-y: auto;
+  }
+  .image-preview-wrap img{
+    display: block;
+    width: 100%;
+    height: auto;
+  }
   .modal-card{
     background: var(--paper);
     color: var(--ink);
@@ -1326,6 +1398,9 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
 
       <div class="receipt-capture" id="receiptCapture">
+        <div class="capture-eyebrow"><span></span></div>
+        <div class="capture-kicker">A Little Keepsake</div>
+
         <span class="receipt-tag" id="receiptTag"></span>
         <div class="card-title">Here's My Answer</div>
 
@@ -1354,6 +1429,12 @@ Would you be free to join me? Let me know if you’re in — your schedule works
         <div class="receipt-line" id="rowNote" style="display:none;">
           <div class="rl-label">Note</div>
           <div class="rl-value" id="rvNote">—</div>
+        </div>
+
+        <div class="capture-footer">
+          <div class="capture-divider"></div>
+          <p class="capture-footer-text" id="captureFooterText">Saved with love, for the next lunch and many more after.</p>
+          <span class="capture-footer-date" id="captureDate"></span>
         </div>
       </div>
 
@@ -1408,6 +1489,22 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       <p class="thankyou-modal-text">Messenger can't auto-fill a message, so I'll copy your answer to your clipboard first. Once the chat opens, just <b>paste it in and hit send</b>.</p>
       <button class="thankyou-modal-done" id="messengerContinueBtn">Continue to Messenger</button>
       <button class="back-link" id="messengerCancelBtn" style="margin-top:12px;">← never mind</button>
+    </div>
+  </div>
+
+  <!-- IMAGE PREVIEW MODAL: shows the generated keepsake image before anything is
+       actually saved, so she can look it over first and then choose to save it
+       or cancel — same flow on phone, tablet, or desktop. -->
+  <div class="modal-overlay" id="imagePreviewOverlay">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" id="imagePreviewCloseBtn" aria-label="Close">✕</button>
+      <div class="thankyou-modal-title">Save This Image?</div>
+      <div class="image-preview-wrap">
+        <img id="imagePreviewImg" alt="Preview of your RSVP keepsake, ready to save">
+      </div>
+      <p class="thankyou-modal-text" id="imagePreviewHint">Tap "Save Image" to download it to your device.</p>
+      <button class="thankyou-modal-done" id="imagePreviewSaveBtn">Save Image</button>
+      <button class="back-link" id="imagePreviewCancelBtn" style="margin-top:12px;">Cancel</button>
     </div>
   </div>
 
@@ -1505,7 +1602,8 @@ Would you be free to join me? Let me know if you’re in — your schedule works
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape'){
-      if (messengerNoteOverlay.classList.contains('show')) closeMessengerNote();
+      if (imagePreviewOverlay.classList.contains('show')) closeImagePreviewModal();
+      else if (messengerNoteOverlay.classList.contains('show')) closeMessengerNote();
       else closeFinalModal();
     }
   });
@@ -1563,6 +1661,10 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
     const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     return `${weekday}, ${dateLabel}`;
+  }
+
+  function formatCaptureDate(){
+    return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
   // ---- map + weather (location step) --------------------------------------
@@ -1624,7 +1726,43 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   }
 
   // ---- save answer as image (final modal) ----------------------------------
+  // Flow: tap "Save as Image" -> render the keepsake to a PNG -> show it in a
+  // preview modal first -> she taps "Save Image" to actually save it, or
+  // "Cancel"/✕/outside-tap to back out without saving anything.
   const saveImageBtn = document.getElementById('saveImageBtn');
+  const imagePreviewOverlay = document.getElementById('imagePreviewOverlay');
+  const imagePreviewImg = document.getElementById('imagePreviewImg');
+  const imagePreviewHint = document.getElementById('imagePreviewHint');
+  const imagePreviewSaveBtn = document.getElementById('imagePreviewSaveBtn');
+  const imagePreviewCancelBtn = document.getElementById('imagePreviewCancelBtn');
+  const imagePreviewCloseBtn = document.getElementById('imagePreviewCloseBtn');
+
+  let pendingImageBlob = null;
+  let pendingImageObjectUrl = null;
+
+  function openImagePreviewModal(blob){
+    pendingImageBlob = blob;
+    pendingImageObjectUrl = URL.createObjectURL(blob);
+    imagePreviewImg.src = pendingImageObjectUrl;
+    // iOS Safari's own "download" flow is unreliable (especially in in-app
+    // browsers), so a long-press-to-save tip is the most dependable fallback
+    // there even though the Save Image button also tries the native share
+    // sheet first on devices that support it.
+    imagePreviewHint.textContent = isIOS
+      ? 'Tip: press and hold the image to save it straight to Photos, or tap "Save Image" below.'
+      : 'Tap "Save Image" to download it to your device.';
+    imagePreviewOverlay.classList.add('show');
+  }
+
+  function closeImagePreviewModal(){
+    imagePreviewOverlay.classList.remove('show');
+    if (pendingImageObjectUrl){
+      URL.revokeObjectURL(pendingImageObjectUrl);
+      pendingImageObjectUrl = null;
+    }
+    pendingImageBlob = null;
+  }
+
   saveImageBtn.addEventListener('click', async () => {
     const target = document.getElementById('receiptCapture');
     const originalLabel = saveImageBtn.textContent;
@@ -1636,17 +1774,70 @@ Would you be free to join me? Let me know if you’re in — your schedule works
         scale: 2,
         useCORS: true
       });
-      const link = document.createElement('a');
-      link.download = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) throw new Error('canvas produced no image data');
+      openImagePreviewModal(blob);
     } catch (err){
-      alert("Sorry, couldn't save the image right now — please try again in a moment.");
+      alert("Sorry, couldn't prepare the image right now — please try again in a moment.");
     } finally {
       saveImageBtn.textContent = originalLabel;
       saveImageBtn.disabled = false;
     }
   });
+
+  imagePreviewSaveBtn.addEventListener('click', async () => {
+    if (!pendingImageBlob) return;
+    const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
+    const originalLabel = imagePreviewSaveBtn.textContent;
+    imagePreviewSaveBtn.textContent = 'Saving…';
+    imagePreviewSaveBtn.disabled = true;
+
+    // Prefer the native share sheet where the device supports sharing files —
+    // this is the most reliable "save to Photos" path on iOS/Android, since
+    // it hands off to the OS's own save flow instead of a plain download.
+    try {
+      if (navigator.canShare && navigator.share){
+        const file = new File([pendingImageBlob], filename, { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })){
+          await navigator.share({ files: [file] });
+          closeImagePreviewModal();
+          imagePreviewSaveBtn.textContent = originalLabel;
+          imagePreviewSaveBtn.disabled = false;
+          return;
+        }
+      }
+    } catch (err){
+      // She backed out of the share sheet on purpose — leave the preview open
+      // so she can still use "Save Image" again or the long-press tip.
+      if (err && err.name === 'AbortError'){
+        imagePreviewSaveBtn.textContent = originalLabel;
+        imagePreviewSaveBtn.disabled = false;
+        return;
+      }
+      // otherwise fall through to the direct-download fallback below
+    }
+
+    // Fallback: classic anchor download — works on desktop browsers and
+    // devices without the file-sharing API.
+    try {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = pendingImageObjectUrl;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      closeImagePreviewModal();
+    } catch (err){
+      alert("Sorry, couldn't save the image — try pressing and holding the image above instead.");
+    } finally {
+      imagePreviewSaveBtn.textContent = originalLabel;
+      imagePreviewSaveBtn.disabled = false;
+    }
+  });
+
+  imagePreviewCancelBtn.addEventListener('click', closeImagePreviewModal);
+  imagePreviewCloseBtn.addEventListener('click', closeImagePreviewModal);
+  imagePreviewOverlay.addEventListener('click', closeImagePreviewModal); // click/tap outside the card cancels
 
   function buildMailto(subject, body){
     return `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -1688,6 +1879,8 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     receiptTag.textContent = "I'm in";
     receiptTag.className = "receipt-tag yes";
     document.querySelector('.thankyou-banner').textContent = "Thank you so much for saying yes — I’m really looking forward to catching up over lunch.";
+    document.getElementById('captureFooterText').textContent = "Saved with love, counting down to our lunch together.";
+    document.getElementById('captureDate').textContent = `Answered ${formatCaptureDate()}`;
 
     document.getElementById('rvRSVP').textContent = "Yes, I'm in";
     document.getElementById('rowWhen').style.display = 'flex';
@@ -1726,6 +1919,8 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     receiptTag.textContent = "Can't make it";
     receiptTag.className = "receipt-tag no";
     document.querySelector('.thankyou-banner').textContent = "Thank you for letting me know — I completely understand. Hopefully we can have lunch another time.";
+    document.getElementById('captureFooterText').textContent = "Saved as a little memory — until our next lunch.";
+    document.getElementById('captureDate').textContent = `Answered ${formatCaptureDate()}`;
 
     document.getElementById('rvRSVP').textContent = "Can't make it";
     document.getElementById('rowWhen').style.display = 'none';
