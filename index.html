@@ -1508,16 +1508,16 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     </div>
   </div>
 
-  <!-- MESSENGER REMINDER POPUP: pops up the instant "Send via Messenger" is
-       tapped — Messenger itself opens at that same instant, so this doesn't
-       delay anything, it just makes the paste instructions impossible to miss. -->
+  <!-- MESSENGER REMINDER POPUP: appears the moment "Send via Messenger" is
+       tapped and shows the paste instructions BEFORE Messenger opens — she
+       reads it, then taps "Continue to Messenger" herself to proceed. -->
   <div class="modal-overlay" id="messengerNoteOverlay">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close" id="messengerNoteCloseBtn" aria-label="Close">✕</button>
       <span class="thankyou-modal-icon">✓</span>
       <div class="thankyou-modal-title">Quick Reminder!</div>
       <p class="thankyou-modal-text" id="messengerNoteText">Copying your keepsake image…</p>
-      <button class="thankyou-modal-done" id="messengerNoteOkBtn">Got it</button>
+      <button class="thankyou-modal-done" id="messengerNoteOkBtn" disabled>Preparing…</button>
     </div>
   </div>
 
@@ -1628,12 +1628,12 @@ Would you be free to join me? Let me know if you’re in — your schedule works
 
   // messenger heads-up modal controls — shown before handing off to the Messenger link
   const messengerNoteOverlay = document.getElementById('messengerNoteOverlay');
+  const messengerNoteOkBtn = document.getElementById('messengerNoteOkBtn');
   function openMessengerNote(){ messengerNoteOverlay.classList.add('show'); }
   function closeMessengerNote(){ messengerNoteOverlay.classList.remove('show'); }
   function setMessengerNoteText(text){ document.getElementById('messengerNoteText').textContent = text; }
   document.getElementById('messengerNoteCloseBtn').addEventListener('click', closeMessengerNote);
-  document.getElementById('messengerNoteOkBtn').addEventListener('click', closeMessengerNote);
-  messengerNoteOverlay.addEventListener('click', closeMessengerNote); // click outside the card closes it
+  messengerNoteOverlay.addEventListener('click', closeMessengerNote); // click outside the card cancels, without opening Messenger
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape'){
@@ -2190,15 +2190,17 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     });
   });
 
-  // Tapping "Send via Messenger" opens Messenger immediately, synchronously,
-  // with nothing awaited first — same fix as Gmail/Mail above, so it's never
-  // blocked as a pop-up on desktop. A reminder pop-up appears at the very
-  // same moment so the paste instructions are impossible to miss, and its
-  // text updates once the image is actually ready to paste.
+  // Tapping "Send via Messenger" shows the reminder pop-up FIRST, with the
+  // paste instructions, so she reads them before anything happens. Messenger
+  // only opens once she taps "Continue to Messenger" herself — and because
+  // that's a fresh click (a real user gesture), it still opens reliably on
+  // every device/browser, popup blockers included, even though the image
+  // was prepared in the background while she was reading.
   async function sendImageToMessenger(){
-    window.open(confirmMessengerBtn.href, '_blank', 'noopener');
+    messengerNoteOkBtn.disabled = true;
+    messengerNoteOkBtn.textContent = 'Preparing…';
+    setMessengerNoteText(`Remember: once you're in Messenger, ${pasteInstruction} to add your image before you hit send. Getting it copied now…`);
     openMessengerNote();
-    setMessengerNoteText("Copying your keepsake image…");
 
     let blob = null;
     try {
@@ -2207,46 +2209,53 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       blob = null;
     }
 
+    let copied = false;
     if (blob){
-      const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
-
       // Copy just the image (no text) to the clipboard so she can paste it
-      // straight into the Messenger chat that just opened.
+      // straight into the Messenger chat once she gets there.
       if (navigator.clipboard && window.ClipboardItem){
         try {
           await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
-          setMessengerNoteText(`✓ Image copied! In Messenger, ${pasteInstruction} to add it, then hit send.`);
-          statusFinal.textContent = "Copied your image! Paste it into Messenger and send.";
-          statusFinal.classList.add('show');
-          pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
-          return;
+          copied = true;
         } catch (err){
-          // fall through to the download fallback below
+          copied = false; // fall through to the download fallback below
         }
       }
 
-      // Fallback: download the image so she can attach it from her
-      // gallery/downloads once she's in the Messenger chat.
-      const downloadUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = filename;
-      link.href = downloadUrl;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
-      setMessengerNoteText("Saved your image to your downloads — attach it in Messenger, then hit send.");
-      statusFinal.textContent = "Saved your image — attach it in Messenger.";
-      statusFinal.classList.add('show');
-      pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
-      return;
+      if (!copied){
+        // Fallback: download the image so she can attach it from her
+        // gallery/downloads once she's in the Messenger chat.
+        const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
+        const downloadUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = downloadUrl;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
+      }
     }
 
-    // Couldn't generate the image at all — Messenger is already open, nothing more to attach.
-    setMessengerNoteText("Opening Messenger — type your reply in once you're there.");
-    statusFinal.textContent = "Opening Messenger…";
-    statusFinal.classList.add('show');
-    pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+    if (copied){
+      setMessengerNoteText(`✓ Image copied! In Messenger, ${pasteInstruction} to add it, then hit send.`);
+    } else if (blob){
+      setMessengerNoteText("Saved your image to your downloads — attach it in Messenger, then hit send.");
+    } else {
+      setMessengerNoteText("Ready — open Messenger and type your reply in once you're there.");
+    }
+
+    messengerNoteOkBtn.disabled = false;
+    messengerNoteOkBtn.textContent = 'Continue to Messenger';
+    messengerNoteOkBtn.onclick = () => {
+      closeMessengerNote();
+      window.open(confirmMessengerBtn.href, '_blank', 'noopener');
+      statusFinal.textContent = copied
+        ? "Opened Messenger — paste your image in and send."
+        : (blob ? "Opened Messenger — attach your saved image and send." : "Opened Messenger…");
+      statusFinal.classList.add('show');
+      pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+    };
   }
 
   confirmMessengerBtn.addEventListener('click', (e) => {
