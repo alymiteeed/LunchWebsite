@@ -389,6 +389,79 @@
   #shareableReceipt::before{ top: 10px; left: 10px; border-top: 1px solid var(--mustard); border-left: 1px solid var(--mustard); }
   #shareableReceipt::after{ bottom: 10px; right: 10px; border-bottom: 1px solid var(--mustard); border-right: 1px solid var(--mustard); }
 
+  /* keepsake dress-up: a small caption above the tag, and a signed,
+     dated stamp below the details — so the exported photo reads like a
+     little memento rather than a plain confirmation screen. */
+  .receipt-eyebrow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .receipt-eyebrow::before, .receipt-eyebrow::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--hairline);
+  }
+  .receipt-eyebrow span{
+    flex-shrink:0;
+    font-family:'Jost', sans-serif;
+    font-size: 9.5px;
+    font-weight:600;
+    letter-spacing: 2.2px;
+    text-transform: uppercase;
+    color: var(--mustard);
+    white-space: nowrap;
+  }
+
+  .receipt-stub{
+    position: relative;
+    height: 1px;
+    margin: 22px 0 18px;
+    background-image: linear-gradient(to right, var(--hairline) 60%, transparent 0%);
+    background-size: 10px 1px;
+    background-repeat: repeat-x;
+  }
+
+  .receipt-footer{ text-align:center; }
+  .receipt-signoff{
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--chalk);
+    margin-bottom: 12px;
+  }
+  .receipt-stamp{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 7px;
+  }
+  .receipt-stamp-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    width: 19px;
+    height: 19px;
+    border: 1px solid var(--mustard);
+    border-radius: 50%;
+    color: var(--mustard);
+    font-size: 10.5px;
+    line-height:1;
+  }
+  .receipt-stamp-text{
+    font-size: 9.5px;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: #9c8a72;
+    font-weight: 600;
+  }
+  .receipt-stamp-text .dot{ margin: 0 1px; letter-spacing:0; }
+
   /* photo memories strip */
   .photo-strip{
     width: 100%;
@@ -570,8 +643,10 @@
     line-height: 1;
   }
 
-  /* image preview inside the messenger heads-up modal, so she can see the
-     actual photo before it's copied and Messenger opens */
+  /* preview inside the messenger heads-up modal, so she can see what's about
+     to be copied — an image preview on most devices, or the plain-text
+     answer on Android (see .text-mode) since that's what actually gets
+     copied there. */
   .receipt-preview{
     position: relative;
     margin: 14px 0 16px;
@@ -600,8 +675,25 @@
     object-fit: contain;
     vertical-align: bottom;
   }
+  .receipt-preview-text{
+    display:none;
+    width: 100%;
+    max-height: 46vh;
+    overflow-y: auto;
+    margin: 0;
+    padding: 18px 16px;
+    box-sizing: border-box;
+    font-family: 'Jost', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--ink);
+    text-align: left;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
   .receipt-preview.ready .receipt-preview-loading{ display:none; }
-  .receipt-preview.ready img{ display:block; }
+  .receipt-preview.ready:not(.text-mode) img{ display:block; }
+  .receipt-preview.text-mode .receipt-preview-text{ display:block; }
 
   /* thank-you modal */
   .thankyou-modal-icon{
@@ -1381,6 +1473,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     <div class="modal-card" id="stepFinal" onclick="event.stopPropagation()">
       <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
       <div id="shareableReceipt">
+      <div class="receipt-eyebrow"><span>A Little Lunch Memory</span></div>
       <span class="receipt-tag" id="receiptTag"></span>
       <div class="card-title">Here's My Answer</div>
 
@@ -1411,7 +1504,17 @@ Would you be free to join me? Let me know if you’re in — your schedule works
         <div class="rl-value" id="rvNote">—</div>
       </div>
 
+      <div class="receipt-stub"></div>
+      <div class="receipt-footer">
+        <div class="receipt-signoff" id="receiptSignoff">with lots of love, see you soon</div>
+        <div class="receipt-stamp">
+          <span class="receipt-stamp-badge">❦</span>
+          <span class="receipt-stamp-text">Lunch Memories <span class="dot">·</span> <span id="rvDateStamp">—</span></span>
+        </div>
       </div>
+
+      </div>
+
 
       <div class="send-options">
         <div class="send-label">Fastest — chat</div>
@@ -1456,6 +1559,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       <div class="receipt-preview" id="receiptPreview">
         <div class="receipt-preview-loading" id="receiptPreviewLoading">Preparing your photo…</div>
         <img id="receiptPreviewImg" alt="Preview of your answer card">
+        <pre class="receipt-preview-text" id="receiptPreviewText"></pre>
       </div>
       <p class="thankyou-modal-text" id="messengerNoteText">Take a look — this is the photo that's about to be copied. Messenger can't auto-fill it, so once the chat opens just <b>paste it in and hit send</b>.</p>
       <a class="thankyou-modal-done" id="messengerContinueBtn" href="#" target="_blank" rel="noopener">Continue to Messenger</a>
@@ -1654,6 +1758,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   const messengerNoteOverlay = document.getElementById('messengerNoteOverlay');
   const receiptPreview = document.getElementById('receiptPreview');
   const receiptPreviewImg = document.getElementById('receiptPreviewImg');
+  const receiptPreviewText = document.getElementById('receiptPreviewText');
   let receiptPreviewUrl = null; // object URL currently shown, revoked before each new one
   function openMessengerNote(){ messengerNoteOverlay.classList.add('show'); }
   function closeMessengerNote(){
@@ -1726,6 +1831,11 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     return `${weekday}, ${dateLabel}`;
   }
 
+  // Today's date, stamped onto the keepsake footer of the receipt — e.g. "Sep 8, 2026".
+  function formatStampDate(){
+    return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
   function buildMailto(subject, body){
     return `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
@@ -1767,6 +1877,8 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     receiptTag.textContent = "I'm in";
     receiptTag.className = "receipt-tag yes";
     document.querySelector('.thankyou-banner').textContent = "Thank you so much for saying yes — I’m really looking forward to catching up over lunch.";
+    document.getElementById('receiptSignoff').textContent = "with lots of love, see you soon";
+    document.getElementById('rvDateStamp').textContent = formatStampDate();
 
     document.getElementById('rvRSVP').textContent = "Yes, I'm in";
     document.getElementById('rowWhen').style.display = 'flex';
@@ -1806,6 +1918,8 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     receiptTag.textContent = "Can't make it";
     receiptTag.className = "receipt-tag no";
     document.querySelector('.thankyou-banner').textContent = "Thank you for letting me know — I completely understand. Hopefully we can have lunch another time.";
+    document.getElementById('receiptSignoff').textContent = "with lots of love, until next time";
+    document.getElementById('rvDateStamp').textContent = formatStampDate();
 
     document.getElementById('rvRSVP').textContent = "Can't make it";
     document.getElementById('rowWhen').style.display = 'none';
@@ -1869,9 +1983,10 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   const isLikelyInAppBrowser = /FBAN|FBAV|Instagram|Messenger|Line\/|MicroMessenger|TikTok|Twitter|GSA\//i.test(uaString);
 
   if (isAndroid){
-    document.getElementById('messengerNoteTitle').textContent = 'Preview Your Answer';
+    document.getElementById('messengerNoteTitle').textContent = 'Your Answer, Copied';
     document.getElementById('messengerNoteText').innerHTML =
-      'Here\'s a preview of your answer. Messenger can\'t auto-fill it, so I\'ll copy your answer as <b>text</b> — once the chat opens just paste it in and hit send.';
+      'Your answer below is already copied as <b>text</b> — Messenger can\'t auto-fill it, so once the chat opens just <b>paste it in and hit send</b>.';
+    receiptPreview.classList.add('text-mode');
   }
 
   if (isLikelyInAppBrowser){
@@ -1965,32 +2080,51 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   }
 
   let captureGen = 0; // guards against a stale capture landing after a newer one was started
-  confirmMessengerBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const gen = ++captureGen;
-    receiptPreview.classList.remove('ready'); // show "preparing…" until this capture resolves
-    receiptImagePromise = captureReceiptImage(); // kicked off now, awaited on "Continue"
-    receiptImagePromise.then(blob => {
-      if (gen !== captureGen || !blob) return; // superseded, or capture failed — leave the loading text up
-      if (receiptPreviewUrl) URL.revokeObjectURL(receiptPreviewUrl);
-      receiptPreviewUrl = URL.createObjectURL(blob);
-      receiptPreviewImg.src = receiptPreviewUrl;
-      receiptPreview.classList.add('ready');
-    });
-    openMessengerNote();
-  });
 
-  // Copies just the text answer to the clipboard (used as the primary path
-  // on Android, and as the last-resort fallback everywhere else).
+  // Copies just the text answer to the clipboard. On Android this is the
+  // *only* copy path (see below); everywhere else it's the last-resort
+  // fallback if the image clipboard write fails.
   async function copyTextAnswer(){
-    const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
+    const fullText = lastBody.trim();
+    receiptPreviewText.textContent = fullText;
     try {
       await navigator.clipboard.writeText(fullText);
       statusFinal.textContent = "Copied your answer! Paste it into Messenger and hit send.";
+      return true;
     } catch (err) {
       statusFinal.textContent = "Copy your answer above and paste it into Messenger.";
+      return false;
     }
   }
+
+  confirmMessengerBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    statusFinal.classList.remove('show');
+
+    if (isAndroid){
+      // Copy the text answer right now, on this very tap — this is the last
+      // point where the page is guaranteed to be focused and still inside
+      // the trusted click gesture. Waiting until "Continue to Messenger"
+      // means the clipboard write races the new tab opening, and losing
+      // focus mid-write is what was silently failing the copy before.
+      // Text-only also skips the image clipboard step entirely, which is
+      // unreliable on Android regardless of timing.
+      receiptPreview.classList.add('ready'); // text fills in immediately, no "preparing" wait needed
+      copyTextAnswer();
+    } else {
+      const gen = ++captureGen;
+      receiptPreview.classList.remove('ready'); // show "preparing…" until this capture resolves
+      receiptImagePromise = captureReceiptImage(); // kicked off now, awaited on "Continue"
+      receiptImagePromise.then(blob => {
+        if (gen !== captureGen || !blob) return; // superseded, or capture failed — leave the loading text up
+        if (receiptPreviewUrl) URL.revokeObjectURL(receiptPreviewUrl);
+        receiptPreviewUrl = URL.createObjectURL(blob);
+        receiptPreviewImg.src = receiptPreviewUrl;
+        receiptPreview.classList.add('ready');
+      });
+    }
+    openMessengerNote();
+  });
 
   document.getElementById('messengerContinueBtn').addEventListener('click', async () => {
     // messengerContinueBtn is a real <a href="..."> with its href already set
@@ -1998,45 +2132,47 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     // preventDefault() here. Letting this actual tap trigger the anchor's own
     // default navigation is what lets iOS/Android recognize it as a genuine,
     // trusted click and hand off straight to the Messenger app, rather than
-    // just opening the m.me web page. Everything below (screenshot + clipboard)
-    // runs alongside that navigation, not before it.
-    statusFinal.textContent = isAndroid ? "Copying your answer…" : "Copying your answer photo…";
-    statusFinal.classList.add('show');
+    // just opening the m.me web page.
 
     if (isAndroid){
-      // Skip the image clipboard attempt entirely on Android — it tends to
-      // report success but not actually copy, leaving her pasting nothing.
-      // Text always works and still gets the answer across.
-      await copyTextAnswer();
+      // Text was already copied the moment "Send via Messenger" was tapped
+      // (see above) — nothing left to do here but hand off to Messenger.
+      pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+      closeMessengerNote();
+      return;
+    }
+
+    // Everything below runs alongside the navigation triggered above, not before it.
+    statusFinal.textContent = "Copying your answer photo…";
+    statusFinal.classList.add('show');
+
+    const blob = receiptImagePromise ? await receiptImagePromise : await captureReceiptImage();
+    let copiedImage = false;
+
+    if (blob && navigator.clipboard && window.ClipboardItem){
+      try {
+        await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
+        copiedImage = true;
+      } catch (err) { /* clipboard image write unsupported or blocked — fall back below */ }
+    }
+
+    if (copiedImage){
+      statusFinal.textContent = "Copied your answer photo! Paste it into Messenger and hit send.";
+    } else if (blob){
+      // Fallback for browsers that can't copy images to the clipboard:
+      // download the photo instead so it can be attached manually.
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'lunch-rsvp.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      statusFinal.textContent = "Your answer photo downloaded — attach it in the chat and send.";
     } else {
-      const blob = receiptImagePromise ? await receiptImagePromise : await captureReceiptImage();
-      let copiedImage = false;
-
-      if (blob && navigator.clipboard && window.ClipboardItem){
-        try {
-          await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
-          copiedImage = true;
-        } catch (err) { /* clipboard image write unsupported or blocked — fall back below */ }
-      }
-
-      if (copiedImage){
-        statusFinal.textContent = "Copied your answer photo! Paste it into Messenger and hit send.";
-      } else if (blob){
-        // Fallback for browsers that can't copy images to the clipboard:
-        // download the photo instead so it can be attached manually.
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'lunch-rsvp.png';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 4000);
-        statusFinal.textContent = "Your answer photo downloaded — attach it in the chat and send.";
-      } else {
-        // Last resort: at least get the text answer onto the clipboard.
-        await copyTextAnswer();
-      }
+      // Last resort: at least get the text answer onto the clipboard.
+      await copyTextAnswer();
     }
 
     pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
