@@ -581,6 +581,9 @@
     cursor: pointer;
     background: var(--chalk);
     color: #f8f3e9;
+    text-align: center;
+    text-decoration: none;
+    box-sizing: border-box;
   }
 
   /* organized "how to send" section inside the final modal */
@@ -1387,7 +1390,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       <span class="thankyou-modal-icon">✓</span>
       <div class="thankyou-modal-title">Quick Heads Up!</div>
       <p class="thankyou-modal-text">Messenger can't auto-fill a photo, so I'll copy the image of your answer to your clipboard first. Once the chat opens, just <b>paste it in and hit send</b>.</p>
-      <button class="thankyou-modal-done" id="messengerContinueBtn">Continue to Messenger</button>
+      <a class="thankyou-modal-done" id="messengerContinueBtn" href="#" target="_blank" rel="noopener">Continue to Messenger</a>
       <button class="back-link" id="messengerCancelBtn" style="margin-top:12px;">← never mind</button>
     </div>
   </div>
@@ -1671,6 +1674,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   const confirmEmailBtn = document.getElementById('confirmEmailBtn');   // Gmail web link
   const confirmMailtoBtn = document.getElementById('confirmMailtoBtn'); // mailto: fallback
   const confirmMessengerBtn = document.getElementById('confirmMessengerBtn'); // Messenger link
+  const messengerContinueBtn = document.getElementById('messengerContinueBtn'); // real <a> in the heads-up modal — must have a real href for iOS/Android to hand off to the app
   const messengerUrl = `https://m.me/${MESSENGER_USERNAME}`;
 
   let lastAnswer = null; // "yes" or "no"
@@ -1716,6 +1720,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     confirmEmailBtn.href = buildGmailWeb(subject, body);
     confirmMailtoBtn.href = buildMailto(subject, body);
     confirmMessengerBtn.href = messengerUrl;
+    messengerContinueBtn.href = messengerUrl;
   }
 
   function buildFinalNo(){
@@ -1758,6 +1763,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     confirmEmailBtn.href = buildGmailWeb(subject, body);
     confirmMailtoBtn.href = buildMailto(subject, body);
     confirmMessengerBtn.href = messengerUrl;
+    messengerContinueBtn.href = messengerUrl;
   }
 
   const statusFinal = document.getElementById('statusFinal');
@@ -1880,14 +1886,13 @@ Would you be free to join me? Let me know if you’re in — your schedule works
   });
 
   document.getElementById('messengerContinueBtn').addEventListener('click', async () => {
-    // Open the tab RIGHT NOW, synchronously, while the browser still counts this
-    // as a direct response to the tap. If we wait until after the awaits below
-    // (image capture, clipboard write) to call window.open(), mobile Safari/Chrome
-    // no longer treat it as user-initiated and silently block it or leave it on
-    // a blank tab — which is why Messenger never actually opened. We open a blank
-    // tab now and navigate it to the Messenger URL once the async work is done.
-    const messengerWindow = window.open('', '_blank', 'noopener');
-
+    // messengerContinueBtn is a real <a href="..."> with its href already set
+    // (see buildFinalYes/buildFinalNo) — we deliberately do NOT call
+    // preventDefault() here. Letting this actual tap trigger the anchor's own
+    // default navigation is what lets iOS/Android recognize it as a genuine,
+    // trusted click and hand off straight to the Messenger app, rather than
+    // just opening the m.me web page. Everything below (screenshot + clipboard)
+    // runs alongside that navigation, not before it.
     statusFinal.textContent = "Copying your answer photo…";
     statusFinal.classList.add('show');
 
@@ -1902,7 +1907,7 @@ Would you be free to join me? Let me know if you’re in — your schedule works
     }
 
     if (copiedImage){
-      statusFinal.textContent = "Copied your answer photo! Opening Messenger — just paste it in and hit send.";
+      statusFinal.textContent = "Copied your answer photo! Paste it into Messenger and hit send.";
     } else if (blob){
       // Fallback for browsers that can't copy images to the clipboard:
       // download the photo instead so it can be attached manually.
@@ -1920,24 +1925,14 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
       try {
         await navigator.clipboard.writeText(fullText);
-        statusFinal.textContent = "Copied your answer! Opening Messenger — just paste it in and hit send.";
+        statusFinal.textContent = "Copied your answer! Paste it into Messenger and hit send.";
       } catch (err) {
-        statusFinal.textContent = "Opening Messenger — copy your answer above and paste it in the chat.";
+        statusFinal.textContent = "Copy your answer above and paste it into Messenger.";
       }
     }
 
     pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
     closeMessengerNote();
-
-    if (messengerWindow){
-      // Navigate the tab we already opened above.
-      messengerWindow.location.href = confirmMessengerBtn.href;
-    } else {
-      // Popup was blocked even on the synchronous open (rare, but some browsers
-      // block ALL window.open calls) — fall back to navigating in the same tab
-      // so it still isn't a dead end.
-      window.location.href = confirmMessengerBtn.href;
-    }
   });
 
   // step 1 -> yes goes to the time step; no goes straight to the no-path
