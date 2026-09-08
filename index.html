@@ -2199,9 +2199,9 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       openTarget: () => window.open(gmailUrl, '_blank', 'noopener'),
       armFallback: armGmailFallback,
       shareLabel: "Opened your share sheet — pick Gmail to send with the image attached.",
-      pasteLabel: "Copied your image! Opening Gmail — paste it into the message (Ctrl/Cmd+V), then hit send.",
-      downloadLabel: "Saved your image — opening Gmail. Attach it from your downloads before you send.",
-      plainLabel: "Opening Gmail in a new tab — hit send to confirm."
+      pasteLabel: "Copied your image! Opening Gmail with your answer already filled in — just paste (Ctrl/Cmd+V) to attach the image, then hit send.",
+      downloadLabel: "Saved your image — opening Gmail with your answer already filled in. Attach the image from your downloads, then hit send.",
+      plainLabel: "Opening Gmail with your answer already filled in — hit send to confirm."
     });
   });
 
@@ -2213,71 +2213,67 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       openTarget: () => { window.location.href = mailtoUrl; },
       armFallback: armMailtoFallback,
       shareLabel: "Opened your share sheet — pick Mail to send with the image attached.",
-      pasteLabel: "Copied your image! Opening your Mail app — paste it into the message, then hit send.",
-      downloadLabel: "Saved your image — opening your Mail app. Attach it from your files before you send.",
-      plainLabel: "Opening your Mail app — hit send to confirm."
+      pasteLabel: "Copied your image! Opening your Mail app with your answer already filled in — just paste to attach the image, then hit send.",
+      downloadLabel: "Saved your image — opening your Mail app with your answer already filled in. Attach the image from your files, then hit send.",
+      plainLabel: "Opening your Mail app with your answer already filled in — hit send to confirm."
     });
   });
 
-  // Tapping "Send via Messenger" no longer jumps straight to Messenger — it
-  // first shows a heads-up modal explaining that her keepsake image is about
-  // to be prepared. The actual image build + hand-off only happens once she
-  // taps "Continue to Messenger" in that modal.
-  confirmMessengerBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    openMessengerNote();
-  });
-
-  const messengerContinueBtn = document.getElementById('messengerContinueBtn');
-  messengerContinueBtn.addEventListener('click', async () => {
-    const originalLabel = messengerContinueBtn.textContent;
-    messengerContinueBtn.textContent = 'Preparing image…';
-    messengerContinueBtn.disabled = true;
+  // Tapping "Send via Messenger" now goes straight to Messenger — no
+  // confirmation pop-up first. It copies just the image (no text, per her
+  // request) to the clipboard and opens Messenger directly, so there's no
+  // app-picker screen in between; she only has to paste once she's there.
+  // The OS share sheet is used only as a fallback for browsers that can
+  // share files but can't copy images to the clipboard (e.g. some Firefox
+  // builds) — most phones/desktops will hit the direct clipboard path above it.
+  async function sendImageToMessenger(){
+    const originalLabel = confirmMessengerBtn.textContent;
+    confirmMessengerBtn.textContent = 'Preparing image…';
+    confirmMessengerBtn.style.pointerEvents = 'none';
 
     let blob = null;
     try {
       blob = await renderReceiptImageBlob();
     } catch (err){
-      blob = null; // fall back to the old text hand-off below if the image can't be built
+      blob = null; // fall back to just opening Messenger below if the image can't be built
     }
 
-    messengerContinueBtn.textContent = originalLabel;
-    messengerContinueBtn.disabled = false;
-    closeMessengerNote();
+    confirmMessengerBtn.textContent = originalLabel;
+    confirmMessengerBtn.style.pointerEvents = '';
 
     if (blob){
       const filename = `lunch-rsvp-${lastAnswer || 'answer'}.png`;
 
-      // Best: her device's own share sheet with the image already attached —
-      // she just picks Messenger and sends, no typing or pasting at all.
+      // Best: copy just the image to the clipboard and open Messenger
+      // directly — no picker, no text, she pastes the image in and sends.
+      if (navigator.clipboard && window.ClipboardItem){
+        try {
+          await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
+          statusFinal.textContent = "Copied your image! Opening Messenger — paste it in and send.";
+          statusFinal.classList.add('show');
+          pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
+          window.open(confirmMessengerBtn.href, '_blank', 'noopener');
+          return;
+        } catch (err){
+          // fall through to the share-sheet path below
+        }
+      }
+
+      // Fallback for browsers that support sharing files but not clipboard
+      // images: her device's share sheet, image only, no text.
       if (navigator.canShare && navigator.share){
         try {
           const file = new File([blob], filename, { type: 'image/png' });
           if (navigator.canShare({ files: [file] })){
-            await navigator.share({ files: [file], title: 'Lunch RSVP' });
+            await navigator.share({ files: [file] });
             statusFinal.textContent = "Opened your share sheet — pick Messenger to send your image.";
             statusFinal.classList.add('show');
             pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
             return;
           }
         } catch (err){
-          if (err && err.name === 'AbortError') return; // she backed out of the share sheet on purpose
-          // otherwise fall through to the clipboard-image path below
-        }
-      }
-
-      // Next best: copy the actual image (not text) to the clipboard, then open
-      // her specific Messenger chat directly — she just pastes the image in.
-      if (navigator.clipboard && window.ClipboardItem){
-        try {
-          await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
-          statusFinal.textContent = "Copied your image! Opening Messenger — just paste it in and send.";
-          statusFinal.classList.add('show');
-          pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
-          window.open(confirmMessengerBtn.href, '_blank', 'noopener');
-          return;
-        } catch (err){
-          // fall through to the download fallback below
+          if (err && err.name === 'AbortError') return; // she backed out on purpose
+          // otherwise fall through to the download fallback below
         }
       }
 
@@ -2298,17 +2294,16 @@ Would you be free to join me? Let me know if you’re in — your schedule works
       return;
     }
 
-    // Couldn't generate the image at all — fall back to the original text hand-off.
-    const fullText = `Lunch RSVP\nSubject: ${lastSubject}\n\n${lastBody}`;
-    try {
-      await navigator.clipboard.writeText(fullText);
-      statusFinal.textContent = "Copied your answer! Opening Messenger — just paste and send.";
-    } catch (err) {
-      statusFinal.textContent = "Opening Messenger — copy your answer above and paste it in the chat.";
-    }
+    // Couldn't generate the image at all — just open Messenger directly.
+    statusFinal.textContent = "Opening Messenger…";
     statusFinal.classList.add('show');
     pendingThankYou = { message: thankYouMessageFor("Thanks for sending your reply!"), icon: "✓" };
     window.open(confirmMessengerBtn.href, '_blank', 'noopener');
+  }
+
+  confirmMessengerBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    sendImageToMessenger();
   });
 
   // step 1 -> yes goes to the time step; no goes straight to the no-path
